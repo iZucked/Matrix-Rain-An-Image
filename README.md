@@ -1,5 +1,5 @@
 # Matrix-Rain-An-Image
-This project implements the classic Matrix digial rain effect to build up an image provided
+This project implements the classic Matrix digial rain effect in python with pygame to build up an image provided
 
 
 
