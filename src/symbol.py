@@ -36,20 +36,20 @@ class SymbolColumn:
     def __init__(self, xPos, startY, placeablePositionsList):
         # Create our list of characters we can render which then is made in to a list of surfaces
         katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
-        font = pg.font.Font('font/MS Mincho.ttf', config.FONT_SIZE, bold=True)
+        font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
         green_katakana = [font.render(char, True, (40, randrange(160, 256), 40)) for char in katakana]
         lightgreen_katakana = [font.render(char, True, pg.Color('lightgreen')) for char in katakana]
         white_katakana = [font.render(char, True, pg.Color('white')) for char in katakana]
         
         minLength = 8
         maxLength = 50
-        minSpeed = 10
-        maxSpeed = 20
+        minSpeed = 1 * config.FONT_SIZE
+        maxSpeed = 1 * config.FONT_SIZE
         
         self.startY = startY
         self.x = xPos
         self.column_height = randrange(minLength, maxLength)
-        self.speed = randrange(minSpeed, maxSpeed, 10)
+        self.speed = config.FONT_SIZE#randrange(minSpeed, maxSpeed, config.FONT_SIZE)
         self.symbols = []
         self.placedSymbols = []
         self.placeablePositions = placeablePositionsList

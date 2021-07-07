@@ -3,13 +3,10 @@ import os
 import math
 import pygame
 from config import config
+from pathlib import Path
+
 
 debug = False
-
-fileName = "logo.png"
-
-
-
 
 # define FPS
 FPS = 120
@@ -21,11 +18,11 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("Our sick window blud!!")
 
 class image:
-    def __init__(self, filename):
-        self.filename = filename
-        self.imgObj = Image.open(fileName)
+    def __init__(self, filePath):
+        self.imgObj = Image.open(Path(filePath))
         self.imgScale = 1
         self.columnPositions = {}
+        self.readyToDraw = False
 
     def getDimensions(self):
         return self.imgObj.size
@@ -68,7 +65,7 @@ class image:
     
         if debug:
             print(f'Numer of occourances:{nOccurances}')
-            print(f'Percentage: {(nOccurances/math.pow(size,2))*100}%')
+            print(f'Percentage: {(nOccurances/math.pow(size,2))*100}%')        
 
     def calculateAllThresholdPositions(self, threshold, size, color):
         width, length = self.getDimensions()
@@ -90,6 +87,19 @@ class image:
                         print("Didn't Meet threshold!")
             yPositions.sort(reverse=True)
             self.columnPositions.update({x : yPositions})
+        
+        self.readyToDraw = True
+
+    def translatePointsByVector(self, vector):
+        if self.columnPositions != {}:
+            vecX, vecY = vector
+            newPoints = {}
+            newPoints = {xPos + vecX : [yPos + vecY for yPos in yPositons] for (xPos, yPositons) in self.columnPositions.items() }
+            self.columnPositions = newPoints
+        else:
+            print("Must calculate points to translate first")
+
+
 
     def getPositionsForColumn(self, columnPos):
         if self.columnHasPositions(columnPos):
@@ -118,22 +128,26 @@ class image:
     def getNumColumns(self):
         return len(self.columnPositions.keys())
 
+    def isReadyToDraw(self):
+        return self.readyToDraw
 
 
 def main():
     # Open image and scale it
-    img = image(fileName)
-    img.scaleImage(.7)
+    img = image(config.IMG_PATH)
+    img.scaleImage(1)
     
     width, length = img.getDimensions()
     WIN = pygame.display.set_mode((width,length))
 
     size = config.FONT_SIZE
 
-    img.calculateAllThresholdPositions(90, config.FONT_SIZE, (255,255,255))
+    img.calculateAllThresholdPositions(30, config.FONT_SIZE, (0,0,0))
 
-    
-    
+    print("Finished calculating")
+
+    if img.columnsLeftToPlace():
+        print("Does have columns left")
 
     while True:
         # Let clock tick
@@ -147,11 +161,6 @@ def main():
                     WIN.fill((0,0,0),(pygame.Rect(x,y,size,size)))
                     WIN.fill((255,255,255),(pygame.Rect(x,y,size-1,size-1)))
                     pygame.display.update()
-
-        # Draw shit
-        #for rectangle in surfaces:
-            #WIN.fill((255,255,255),rectangle)
-
 
         # Getting events
         for event in pygame.event.get():
