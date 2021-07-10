@@ -1,6 +1,7 @@
 # Matrix-Rain-An-Image
 This project implements the classic Matrix digial rain effect in python with pygame to build up an image provided
 
+![example of just draw mode](example.gif)
 
 ## Credits
 

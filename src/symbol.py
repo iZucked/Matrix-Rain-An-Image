@@ -6,14 +6,21 @@ import time
 NOT_PLACED  = 0x00
 PLACED      = 0x01
 
+
+
 class Symbol:
-    def __init__(self, x, y, speed, characterSet):
+    def __init__(self, x, y, speed, color):
+        # Create our list of characters we can render which then is made in to a list of surfaces
+        katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
+        font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
+
         self.x, self.y = x, y
         self.speed = speed
-        self.surface = choice(characterSet)
+        self.color = color
         self.interval = randrange(5, 30)
-        self.charSet = characterSet
         self.state = NOT_PLACED
+        self.charSet = [font.render(char, True, color) for char in katakana]
+        self.surface = choice(self.charSet)
 
     def update(self):
         frames = pg.time.get_ticks()
@@ -26,6 +33,9 @@ class Symbol:
 
         return self
 
+    def draw(self, surface):
+        surface.blit(self.surface, (self.x, self.y))
+
     def getYPosition(self):
         return self.y
 
@@ -33,18 +43,11 @@ class Symbol:
         self.state = PLACED
 
 class SymbolColumn:
-    def __init__(self, xPos, startY, placeablePositionsList):
-        # Create our list of characters we can render which then is made in to a list of surfaces
-        katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
-        font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
-        green_katakana = [font.render(char, True, (40, randrange(160, 256), 40)) for char in katakana]
-        lightgreen_katakana = [font.render(char, True, pg.Color('lightgreen')) for char in katakana]
-        white_katakana = [font.render(char, True, pg.Color('white')) for char in katakana]
-        
+    def __init__(self, xPos, startY, placeablePositionsList):        
         minLength = 8
         maxLength = 50
         minSpeed = 1 * config.FONT_SIZE
-        maxSpeed = 1 * config.FONT_SIZE
+        maxSpeed = 2 * config.FONT_SIZE
         
         self.startY = startY
         self.x = xPos
@@ -58,11 +61,11 @@ class SymbolColumn:
         for i in range(startY, startY - config.FONT_SIZE * self.column_height, -config.FONT_SIZE):
             if n == 0:
                 # Let first symbol be white
-                self.symbols.append(Symbol(xPos, i, self.speed, white_katakana))
+                self.symbols.append(Symbol(xPos, i, self.speed, pg.Color('white')))
             elif  n % 2 :
-                self.symbols.append(Symbol(xPos, i, self.speed, green_katakana))
+                self.symbols.append(Symbol(xPos, i, self.speed, (40, randrange(160, 256), 40)))
             else:
-                self.symbols.append(Symbol(xPos, i, self.speed, lightgreen_katakana)) 
+                self.symbols.append(Symbol(xPos, i, self.speed, pg.Color('lightgreen'))) 
             
             n=+1
 
@@ -72,7 +75,7 @@ class SymbolColumn:
         whiteSymbol = copy_list[0]
         whiteSymbol.stop_moving()
         self.placedSymbols.append(whiteSymbol)
-        self.symbols[0] = Symbol(whiteSymbol.x, whiteSymbol.y, whiteSymbol.speed, whiteSymbol.charSet)
+        self.symbols[0] = Symbol(whiteSymbol.x, whiteSymbol.y, whiteSymbol.speed, whiteSymbol.color)
 
     def getWhiteSymbol(self):
         return self.symbols[0]
@@ -103,7 +106,7 @@ class SymbolColumn:
             symbol.surface.set_alpha(i + (255 - (255 / self.column_height)*i))
 
             # Draw symbol to surface
-            surface.blit(symbol.surface, (symbol.x, symbol.y))
+            symbol.draw(surface)
 
         # Draw all placed symbols
         for symbol in self.placedSymbols:

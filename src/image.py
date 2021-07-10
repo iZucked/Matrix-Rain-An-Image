@@ -33,8 +33,8 @@ class image:
 
     def scaleImage(self, scaleFactor):
         x, y = self.getDimensions()
-        newDimensions = (x*scaleFactor , y*scaleFactor)
-        self.imgObj.thumbnail(newDimensions, Image.ANTIALIAS)
+        newDimensions = (round(x*scaleFactor) , round(y*scaleFactor))
+        self.imgObj = self.imgObj.resize(newDimensions, resample=Image.LANCZOS)
 
     def isRegionThisColor(self, xStart, yStart, size, threshold, color):
         # Get image data
@@ -135,14 +135,14 @@ class image:
 def main():
     # Open image and scale it
     img = image(config.IMG_PATH)
-    img.scaleImage(1)
+    img.scaleImage(config.IMG_SCALE)
     
     width, length = img.getDimensions()
     WIN = pygame.display.set_mode((width,length))
 
     size = config.FONT_SIZE
 
-    img.calculateAllThresholdPositions(30, config.FONT_SIZE, (0,0,0))
+    img.calculateAllThresholdPositions(config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR)
 
     print("Finished calculating")
 

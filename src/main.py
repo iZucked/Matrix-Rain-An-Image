@@ -12,6 +12,11 @@ RES = config.SCREEN_WIDTH, config.SCREEN_HEIGHT
 def main():
     TOGLE_DRAWING = True
     
+    # MODE check
+    if config.JUST_DISPLAY_MODE and config.RAIN_ACCUMULATION_MODE:
+        print("CAN'T HAVE BOTH MODES ACTIVATED!, CHECK config.py")
+        exit()
+
     # Init pygame
     pg.init()
 
@@ -38,13 +43,15 @@ def main():
     vecY = round((sY - iY)/config.FONT_SIZE)
     img.translatePointsByVector((vecX*config.FONT_SIZE, vecY*config.FONT_SIZE))
 
+    # Set up symbol list for JUST_DISPLAY_MODE if toggled
+    symbol_list = []
+    if config.JUST_DISPLAY_MODE:
+            for x, yPositions in img.columnPositions.items():
+                for y in yPositions:
+                    symbol_list.append(Symbol(x,y,0,pg.Color('white')))
+
     # Create a column for each (x, x + FONT_SIZE) in the screen
     symbol_columns = [SymbolColumn(x, randrange(0, config.SCREEN_HEIGHT), img.getPositionsForColumn(x)) for x in range(0, config.SCREEN_WIDTH, config.FONT_SIZE)]
-
-    for column in symbol_columns:
-        for pos in column.placeablePositions:
-            if pos % config.FONT_SIZE != 0:
-                print(f"{pos} isn't divisible")
 
     while True:
         # Check for events
@@ -56,15 +63,18 @@ def main():
         screen.blit(bg, (0, 0))
         bg.fill(pg.Color('black'))
 
-        # Check if symbol is in it's next column symbol position to be placed and if so pause it's motion
-        if TOGLE_DRAWING:
+        if config.RAIN_ACCUMULATION_MODE and TOGLE_DRAWING:
             if img.columnsLeftToPlace():
                 for symbol_column in symbol_columns:
                     if img.columnHasPositions(symbol_column.x):
                         if symbol_column.getWhiteSymbol().getYPosition() == img.getNextPositionForColumn(symbol_column.x):
                             symbol_column.placeWhiteSymbol()
                             img.getPositionsForColumn(symbol_column.x).pop(0)
-        
+        elif config.JUST_DISPLAY_MODE and TOGLE_DRAWING:
+            for symbol in symbol_list:
+                symbol.update()
+                symbol.draw(bg)
+
         # Draw all columns
         for symbol_column in symbol_columns:
             symbol_column.draw(bg)
@@ -79,7 +89,7 @@ def main():
         if keys_pressed[pg.K_RETURN]: # Left
             TOGLE_DRAWING = not TOGLE_DRAWING
 
-        pg.display.flip()
+        pg.display.update()
         clock.tick(config.FPS_LIMIT)
 
 if __name__ == "__main__":
