@@ -7,7 +7,6 @@ from symbol import Symbol, SymbolColumn
 import time
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
-RES = config.SCREEN_WIDTH, config.SCREEN_HEIGHT
 
 def main():
     TOGLE_DRAWING = True
@@ -23,12 +22,14 @@ def main():
     # Set up image
     img = image(config.IMG_PATH)
     img.scaleImage(config.IMG_SCALE)
+    startT = time.time()
     img.calculateAllThresholdPositions(config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR)
+    print(f"Time taken to calculate image points: {time.time() - startT}s")
 
     # Set up screen
-    screen = pg.display.set_mode(RES, pg.RESIZABLE)
+    screen = pg.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pg.RESIZABLE)
     pg.display.set_caption("@CodeAccelerando on github")
-    bg = screen#pg.Surface(RES)
+    bg = pg.Surface((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
     alpha_value = config.STARTING_ALPHA
     bg.set_alpha(alpha_value)
     clock = pg.time.Clock()

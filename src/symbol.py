@@ -6,8 +6,6 @@ import time
 NOT_PLACED  = 0x00
 PLACED      = 0x01
 
-
-
 class Symbol:
     def __init__(self, x, y, speed, color):
         # Create our list of characters we can render which then is made in to a list of surfaces
@@ -45,14 +43,17 @@ class Symbol:
 class SymbolColumn:
     def __init__(self, xPos, startY, placeablePositionsList):        
         minLength = 8
-        maxLength = 50
-        minSpeed = 1 * config.FONT_SIZE
-        maxSpeed = 2 * config.FONT_SIZE
+        maxLength = 35
+        minSpeed = 3
+        maxSpeed = 8
         
         self.startY = startY
         self.x = xPos
         self.column_height = randrange(minLength, maxLength)
-        self.speed = config.FONT_SIZE#randrange(minSpeed, maxSpeed, config.FONT_SIZE)
+        if config.RAIN_ACCUMULATION_MODE:
+            self.speed = config.FONT_SIZE
+        else:
+            self.speed = randrange(minSpeed, maxSpeed)
         self.symbols = []
         self.placedSymbols = []
         self.placeablePositions = placeablePositionsList

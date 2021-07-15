@@ -4,18 +4,8 @@ import math
 import pygame
 from config import config
 from pathlib import Path
-
-
-debug = False
-
-# define FPS
-FPS = 120
+import time
     
-# Define clock for fps
-clock = pygame.time.Clock()
-
-# Set window title
-pygame.display.set_caption("Our sick window blud!!")
 
 class image:
     def __init__(self, filePath):
@@ -128,11 +118,13 @@ class image:
     def getNumColumns(self):
         return len(self.columnPositions.keys())
 
-    def isReadyToDraw(self):
-        return self.readyToDraw
-
-
 def main():
+    # Define clock for fps
+    clock = pygame.time.Clock()
+
+    # Set window title
+    pygame.display.set_caption("Our sick window blud!!")
+
     # Open image and scale it
     img = image(config.IMG_PATH)
     img.scaleImage(config.IMG_SCALE)
@@ -142,12 +134,14 @@ def main():
 
     size = config.FONT_SIZE
 
+    start = time.time()
     img.calculateAllThresholdPositions(config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR)
+    finish = time.time()
 
-    print("Finished calculating")
+    print(f"Finished calculating in {finish-start} seconds")
 
-    if img.columnsLeftToPlace():
-        print("Does have columns left")
+    if not img.columnsLeftToPlace():
+        print("Couldn't calculate any positions to draw")
 
     while True:
         # Let clock tick
