@@ -6,7 +6,7 @@ This project implements the classic Matrix digial rain effect in python with pyg
 ## Install & Usage
 ```vim
 pip install pygame " Make sure to have pygame installed
-git clone https://github.com/CodeAccelerando/Matrix-Rain-An-Image.git " Clone repo
+git clone "https://github.com/CodeAccelerando/Matrix-Rain-An-Image.git" " Clone repo
 cd Matrix-Rain-An-Image
 vim src/config.py " Edit config 
 python src/main.py " Run program
