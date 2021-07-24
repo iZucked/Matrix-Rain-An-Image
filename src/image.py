@@ -1,15 +1,30 @@
 from PIL import Image
+import cv2
+from numpy import where
 import os
 import math
 import pygame
 from config import config
 from pathlib import Path
 import time
-    
+
+debug=False
 
 class image:
     def __init__(self, filePath):
-        self.imgObj = Image.open(Path(filePath))
+        if not config.DRAW_LINES_OF_IMAGE:
+            self.imgObj = Image.open(Path(filePath))
+        else:
+            # Do pre-processing if DRAW_LINES_OF_IMAGE is enabled
+            image = cv2.imread(config.IMG_PATH)
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Grayscale the image
+            lines = cv2.Canny(gray, 10, 200)
+            whitePx = where(lines == 255)
+            cnts = cv2.findContours(lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+            for c in cnts:
+                cv2.drawContours(lines, [c], -1 , config.ISOLATE_COLOR ,thickness=2)
+            self.imgObj = Image.fromarray(lines)
         self.imgScale = 1
         self.columnPositions = {}
         self.readyToDraw = False
