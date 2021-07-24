@@ -13,9 +13,7 @@ python src/main.py " Run program
 ```
 
 ## Notice
-```
 The current version of the project is very inefficient and may take up to a minute to draw large images, this will be fixed at some point but can't confirm when :)
-```
 
 ## Credits
 
