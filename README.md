@@ -9,7 +9,7 @@ pip install pygame numpy opencv-python " Make sure to have requirements installe
 git clone "https://github.com/CodeAccelerando/Matrix-Rain-An-Image.git" " Clone repo
 cd Matrix-Rain-An-Image
 vim src/config.py " Edit config 
-python src/main.py " Run program
+python src/main.py images/logo.png" Run program with input image 
 ```
 
 ## Notice
