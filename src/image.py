@@ -8,7 +8,6 @@ from config import config
 from pathlib import Path
 import time
 
-debug=False
 
 class image:
     def __init__(self, filePath):
@@ -23,8 +22,13 @@ class image:
             cnts = cv2.findContours(lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
             for c in cnts:
-                cv2.drawContours(lines, [c], -1 , config.ISOLATE_COLOR ,thickness=2)
+                cv2.drawContours(lines, [c], -1 , config.ISOLATE_COLOR ,thickness=config.LINE_THICKNESS)
+            if config.debug:
+                cv2.imshow("Image converted to lines",lines)
+                cv2.waitKey()
+
             self.imgObj = Image.fromarray(lines)
+
         self.imgScale = 1
         self.columnPositions = {}
         self.readyToDraw = False
@@ -54,7 +58,7 @@ class image:
             for x in range(xStart, xStart + size):
                 r, g, b = rgb_img.getpixel((x,y))
                 
-                if debug:
+                if config.debug:
                     print(f'Pixel at : {x},{y} has color ({r},{g},{b})')
                 
                 if (r,g,b) == (r0,g0,b0):
@@ -68,27 +72,27 @@ class image:
         else:
             return False
     
-        if debug:
+        if config.debug:
             print(f'Numer of occourances:{nOccurances}')
             print(f'Percentage: {(nOccurances/math.pow(size,2))*100}%')        
 
     def calculateAllThresholdPositions(self, threshold, size, color):
         width, length = self.getDimensions()
 
-        if debug:
+        if config.debug:
             print(f'Image Size: {width} x {length}')
 
         for x in range(0, width - size, size):
             yPositions = []
             for y in range(0, length - size, size):
-                if debug:
+                if config.debug:
                     print(f'{x},{y} -> {x+size}, {y+size}')
                 if self.isRegionThisColor(x,y,size,threshold,color):
                     yPositions.append(y)
-                    if debug:
+                    if config.debug:
                         print("Met threshold!")
                 else:
-                    if debug:
+                    if config.debug:
                         print("Didn't Meet threshold!")
             yPositions.sort(reverse=True)
             self.columnPositions.update({x : yPositions})
