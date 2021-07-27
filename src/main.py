@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 import pygame as pg
 from random import choice, randrange
@@ -22,11 +23,15 @@ def main():
         print("Can't select more than one picture processing mode")
         exit()
 
+    if len(sys.argv) != 2:
+        print("Must add image to input in command line argument")
+        exit()
+
     # Init pygame
     pg.init()
 
     # Set up image
-    img = image(config.IMG_PATH)
+    img = image(sys.argv[1])
     img.scaleImage(config.IMG_SCALE)
     startT = time.time()
     img.calculateAllThresholdPositions(
@@ -108,7 +113,7 @@ def main():
 
         # Check if user wants to start placing image
         keys_pressed = pg.key.get_pressed()
-        if keys_pressed[pg.K_RETURN]:  # Left
+        if keys_pressed[pg.K_RETURN]:
             TOGLE_DRAWING = not TOGLE_DRAWING
 
         pg.display.update()

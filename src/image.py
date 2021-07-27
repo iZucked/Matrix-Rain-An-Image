@@ -12,12 +12,18 @@ import time
 class image:
     def __init__(self, filePath):
         if not config.DRAW_LINES_OF_IMAGE:
-            self.imgObj = Image.open(Path(filePath))
+            try:
+                self.imgObj = Image.open(Path(filePath))
+            except:
+                print(f"ERROR: Can't open image at: {filePath}")
+                exit()
         else:
             # Do pre-processing if DRAW_LINES_OF_IMAGE is enabled
-            image = cv2.imread(config.IMG_PATH)
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Grayscale the image
-            lines = cv2.Canny(gray, 10, 200)
+            image = cv2.imread(filePath, cv2.IMREAD_GRAYSCALE)
+            if image is None:
+                print(f"ERROR: Can't open image at: {filePath}")
+                exit()
+            lines = cv2.Canny(image, 10, 200)
             whitePx = where(lines == 255)
             cnts = cv2.findContours(lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -29,6 +35,7 @@ class image:
 
             self.imgObj = Image.fromarray(lines)
 
+        self.path = filePath
         self.imgScale = 1
         self.columnPositions = {}
         self.readyToDraw = False
