@@ -18,6 +18,10 @@ def main():
         print("CAN'T HAVE BOTH MODES ACTIVATED!, CHECK config.py")
         exit()
 
+    if config.DRAW_LINES_OF_IMAGE and config.SINGLE_COLOR_SELECTION:
+        print("Can't select more than one picture processing mode")
+        exit()
+
     # Init pygame
     pg.init()
 
