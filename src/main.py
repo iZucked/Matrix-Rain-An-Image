@@ -29,57 +29,16 @@ def mode_check():
     return True
 
 
-def main():
-    toggle_drawing = True
-
-    if not mode_check():
-        return
-
-    pygame.init()
-
+def get_image():
     img = Image(sys.argv[1])
     img.scale_image(Config.IMG_SCALE)
-    start_time = time.time()
-
     img.calculate_all_threshold_positions(
         Config.FONT_SIZE, Config.ISOLATE_COLOR
     )
+    return img
 
-    if Config.debug:
-        print(
-            f"Time taken to calculate image points: {time.time() - start_time}s"
-        )
 
-    screen = pygame.display.set_mode(
-        (Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT), pygame.RESIZABLE
-    )
-
-    pygame.display.set_caption("@CodeAccelerando on github")
-    background = pygame.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
-    alpha_value = Config.STARTING_ALPHA
-    background.set_alpha(alpha_value)
-    clock = pygame.time.Clock()
-
-    # Set image to be centred in the screen
-    s_x, s_y = (Config.SCREEN_WIDTH // 2, Config.SCREEN_HEIGHT // 2)
-    i_x, i_y = img.get_centre()
-
-    # Must be translated by terms of font size so they can be drawn to points
-    # where the symbols should be
-    vec_x = round((s_x - i_x) / Config.FONT_SIZE)
-    vec_y = round((s_y - i_y) / Config.FONT_SIZE)
-
-    start_time = time.time()
-    img.translate_points_by_vector(
-        (vec_x * Config.FONT_SIZE, vec_y * Config.FONT_SIZE)
-    )
-
-    if Config.debug:
-        print(
-            f"Time taken to translate image points: {time.time() - start_time}s"
-        )
-
-    # Set up symbol list for JUST_DISPLAY_MODE if toggled
+def get_symbols(img):
     symbol_list = []
     if Config.JUST_DISPLAY_MODE:
         for x, yPositions in img.column_positions.items():
@@ -94,6 +53,52 @@ def main():
         )
         for x in range(0, Config.SCREEN_WIDTH, Config.FONT_SIZE)
     ]
+
+    return symbol_list, symbol_columns
+
+
+def main():
+    toggle_drawing = True
+
+    if not mode_check():
+        return
+
+    pygame.init()
+
+    marker = time.time()
+    img = get_image()
+
+    if Config.debug:
+        print(f"Time taken to calculate image points: {time.time() - marker}s")
+
+    screen = pygame.display.set_mode(Config.SCREEN_SIZE, pygame.RESIZABLE)
+    pygame.display.set_caption("@CodeAccelerando on github")
+
+    background = pygame.Surface(Config.SCREEN_SIZE)
+    background.set_alpha(Config.STARTING_ALPHA)
+    clock = pygame.time.Clock()
+
+    # Set image to be centred in the screen
+    s_x, s_y = (Config.SCREEN_WIDTH // 2, Config.SCREEN_HEIGHT // 2)
+    i_x, i_y = img.get_centre()
+
+    # Must be translated by terms of font size so they can be drawn to points
+    # where the symbols should be
+    vec_x = round((s_x - i_x) / Config.FONT_SIZE)
+    vec_y = round((s_y - i_y) / Config.FONT_SIZE)
+
+    marker = time.time()
+    img.translate_points_by_vector(
+        (vec_x * Config.FONT_SIZE, vec_y * Config.FONT_SIZE)
+    )
+
+    if Config.debug:
+        print(
+            f"Time taken to translate image points: {time.time() - marker}s"
+        )
+
+    # Set up symbol list for JUST_DISPLAY_MODE if toggled
+    symbol_list, symbol_columns = get_symbols(img)
 
     is_running = True
     while is_running:
@@ -133,10 +138,10 @@ def main():
         # Alpha max is 255 where there is no fading
         if (
             not pygame.time.get_ticks() % Config.FADE_RATE
-                and alpha_value < Config.ALPHA_LIMIT
+                and Config.STARTING_ALPHA < Config.ALPHA_LIMIT
         ):
-            alpha_value += Config.FADE_ADJUSTMENT
-            background.set_alpha(alpha_value)
+            Config.STARTING_ALPHA += Config.FADE_ADJUSTMENT
+            background.set_alpha(Config.STARTING_ALPHA)
 
         # Check if user wants to start placing image
         keys_pressed = pygame.key.get_pressed()

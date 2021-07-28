@@ -22,6 +22,8 @@ class Config:
     # Window related
     SCREEN_WIDTH = 1260
     SCREEN_HEIGHT = 800
+    SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
+
     FONT_SIZE = 10
     FPS_LIMIT = 60
 
