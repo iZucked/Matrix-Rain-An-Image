@@ -105,15 +105,15 @@ class image:
         subLen, subWid, _, _ = subMatracies.shape
 
         # Loop through all submatracies and
-        for x in range(0, subWid - 1):
+        for x in range(subWid - 1):
             yPositions = []
-            for y in range(0, subLen - 1):
+            for y in range(subLen - 1):
                 # Check if passes threshold occurances of color in submatrix
                 nOccerances = np.count_nonzero(subMatracies[y][x])
                 pOccuracnes = (nOccerances / math.pow(size, 2)) * 100
                 if pOccuracnes >= config.THRESHOLD:
                     yPositions.append(y * size)
-            if len(yPositions) > 0:
+            if yPositions:
                 yPositions.sort(reverse=True)
                 self.columnPositions.update({x * size: yPositions})
 
@@ -134,10 +134,9 @@ class image:
             return []
 
     def columnsLeftToPlace(self):
-        for column in self.getColumns():
-            if self.columnHasPositions(column):
-                return True
-        return False
+        return any(
+            self.columnHasPositions(column) for column in self.getColumns()
+        )
 
     def columnHasPositions(self, columnPos):
         if columnPos in self.columnPositions:
@@ -188,6 +187,8 @@ def main():
         clock.tick(config.FADE_RATE)
 
         if not stopDrawing:
+            stopDrawing = True
+
             for x, yPositions in img.columnPositions.items():
                 for y in yPositions:
                     WIN.fill((0, 0, 0), (
@@ -195,8 +196,6 @@ def main():
                     WIN.fill((255, 255, 255), (
                         pygame.Rect(x, y, config.FONT_SIZE - 1,
                                     config.FONT_SIZE - 1)))
-                    stopDrawing = True
-
         # Getting events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

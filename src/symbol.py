@@ -11,7 +11,7 @@ pg.init()
 # Create our list of characters we can render which then is made in to a
 # list of surfaces
 katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
-font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
+font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE)
 
 
 class Symbol:
@@ -50,15 +50,15 @@ class SymbolColumn:
     def __init__(self, xPos, startY, placeablePositionsList):
         minLength = 8
         maxLength = 35
-        minSpeed = 3
-        maxSpeed = 8
-
         self.startY = startY
         self.x = xPos
         self.column_height = randrange(minLength, maxLength)
         if config.RAIN_ACCUMULATION_MODE:
             self.speed = config.FONT_SIZE
         else:
+            minSpeed = 3
+            maxSpeed = 8
+
             self.speed = randrange(minSpeed, maxSpeed)
         self.symbols = []
         self.placedSymbols = []

@@ -94,13 +94,13 @@ def main():
         if config.RAIN_ACCUMULATION_MODE and TOGLE_DRAWING:
             if img.columnsLeftToPlace():
                 for symbol_column in symbol_columns:
-                    if img.columnHasPositions(symbol_column.x):
-                        if (
-                                symbol_column.getWhiteSymbol().getYPosition()
-                                == img.getNextPositionForColumn(symbol_column.x)
-                        ):
-                            symbol_column.placeWhiteSymbol()
-                            img.getPositionsForColumn(symbol_column.x).pop(0)
+                    if img.columnHasPositions(symbol_column.x) and (
+                        symbol_column.getWhiteSymbol().getYPosition()
+                        == img.getNextPositionForColumn(symbol_column.x)
+                    ):
+                        symbol_column.placeWhiteSymbol()
+                        img.getPositionsForColumn(symbol_column.x).pop(0)
+
         elif config.JUST_DISPLAY_MODE and TOGLE_DRAWING:
             for symbol in symbol_list:
                 symbol.update()
