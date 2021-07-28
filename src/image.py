@@ -149,7 +149,7 @@ def main():
     clock = pygame.time.Clock()
 
     # Set window title
-    pygame.display.set_caption("Our sick window blud!!")
+    pygame.display.set_caption("Image to font boxes calculated")
 
     # Open image and scale it
     img = image(sys.argv[1])
@@ -158,29 +158,28 @@ def main():
     width, length = img.getDimensions()
     WIN = pygame.display.set_mode((width,length))
 
-    size = config.FONT_SIZE
-
     start = time.time()
     img.calculateAllThresholdPositions(config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR)
     finish = time.time()
 
-    print(f"Finished calculating in {finish-start} seconds")
+    print(f"Finished calculating points in {finish-start} seconds")
 
     if not img.columnsLeftToPlace():
         print("Couldn't calculate any positions to draw")
+        quit()
+
+    stopDrawing = False
 
     while True:
         # Let clock tick
-        clock.tick(FPS)
+        clock.tick(config.FADE_RATE)
 
-        if img.columnsLeftToPlace():
-            for x in range(0, config.SCREEN_WIDTH, config.FONT_SIZE):
-                if img.columnHasPositions(x):
-                    y = img.getPositionsForColumn(x).pop(0)
-                    clock.tick(FPS)
-                    WIN.fill((0,0,0),(pygame.Rect(x,y,size,size)))
-                    WIN.fill((255,255,255),(pygame.Rect(x,y,size-1,size-1)))
-                    pygame.display.update()
+        if not stopDrawing:
+            for x, yPositions in img.columnPositions.items():
+                for y in yPositions:
+                    WIN.fill((0,0,0),(pygame.Rect(x, y, config.FONT_SIZE, config.FONT_SIZE)))
+                    WIN.fill((255,255,255),(pygame.Rect(x, y, config.FONT_SIZE-1, config.FONT_SIZE-1)))
+                    stopDrawing = True
 
         # Getting events
         for event in pygame.event.get():
