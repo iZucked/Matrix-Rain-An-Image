@@ -8,7 +8,8 @@ PLACED = 0x01
 
 pg.init()
 
-# Create our list of characters we can render which then is made in to a list of surfaces
+# Create our list of characters we can render which then is made in to a
+# list of surfaces
 katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
 font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
 
@@ -30,7 +31,8 @@ class Symbol:
             self.surface = choice(self.charSet)
 
         if self.state == NOT_PLACED:
-            self.y = self.y + self.speed if self.y < config.SCREEN_HEIGHT else -config.FONT_SIZE
+            self.y = self.y + self.speed \
+                if self.y < config.SCREEN_HEIGHT else -config.FONT_SIZE
 
         return self
 
@@ -91,7 +93,10 @@ class SymbolColumn:
         return self.symbols[0]
 
     def checkWhiteSymbol(self):
-        if self.getWhiteSymbol().getYPosition() == self.nextPlacementPos and self.nextPlacementPos != -1:
+        if (
+                self.getWhiteSymbol().getYPosition() == self.nextPlacementPos
+                and self.nextPlacementPos != -1
+        ):
             # print(f"placing white at: {self.nextPlacementPos}")
             if len(self.placeablePositions) > 0:
                 self.nextPlacementPos = self.placeablePositions.pop(0)

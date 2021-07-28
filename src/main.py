@@ -55,7 +55,8 @@ def main():
     img_center = img.getCentre()
     sX, sY = screen_centre
     iX, iY = img_center
-    # Must be translated by terms of font size so they can be drawn to points where the symbols should be
+    # Must be translated by terms of font size so they can be drawn to points
+    # where the symbols should be
     vecX = round((sX - iX) / config.FONT_SIZE)
     vecY = round((sY - iY) / config.FONT_SIZE)
 

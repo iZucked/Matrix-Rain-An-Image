@@ -73,9 +73,13 @@ class image:
             cv2.imshow("Masked image", mask)
             cv2.waitKey(0)
 
-        # Code provided by https://github.com/ilastik/lazyflow/blob/master/lazyflow/utility/blockwise_view.py, an absolute god send
+        # Code provided by
+        # https://github.com/ilastik/lazyflow/blob/master/lazyflow/utility/blockwise_view.py,
+        # an absolute god send
+
         # This compared to the other version is ~5000x faster
-        # Breaks image down to submatracies of sizexsize and then checks if the mask has values
+        # Breaks image down to submatracies of sizexsize and then checks if the
+        # mask has values
         blockshape = tuple((size, size))
         outershape = tuple(np.array(mask.shape) // blockshape)
         view_shape = outershape + blockshape
@@ -93,9 +97,10 @@ class image:
 
         # This is where the magic happens.
         # Generate a view with our new strides (outer+inner).
-        subMatracies = np.lib.stride_tricks.as_strided(mask, shape=view_shape,
-                                                       strides=(
-                                                                   inter_block_strides + intra_block_strides))
+        subMatracies = np.lib.stride_tricks.as_strided(
+            mask, shape=view_shape, strides=(
+                    inter_block_strides + intra_block_strides
+            ))
 
         subLen, subWid, _, _ = subMatracies.shape
 
@@ -165,8 +170,9 @@ def main():
     WIN = pygame.display.set_mode((width, length))
 
     start = time.time()
-    img.calculateAllThresholdPositions(config.THRESHOLD, config.FONT_SIZE,
-                                       config.ISOLATE_COLOR)
+    img.calculateAllThresholdPositions(
+        config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR
+    )
     finish = time.time()
 
     print(f"Finished calculating points in {finish - start} seconds")
