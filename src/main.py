@@ -37,7 +37,8 @@ def main():
     img.calculateAllThresholdPositions(
         config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR
     )
-    print(f"Time taken to calculate image points: {time.time() - startT}s")
+    if config.debug:
+        print(f"Time taken to calculate image points: {time.time() - startT}s")
 
     # Set up screen
     screen = pg.display.set_mode(
@@ -57,7 +58,11 @@ def main():
     # Must be translated by terms of font size so they can be drawn to points where the symbols should be
     vecX = round((sX - iX) / config.FONT_SIZE)
     vecY = round((sY - iY) / config.FONT_SIZE)
+
+    startT = time.time()
     img.translatePointsByVector((vecX * config.FONT_SIZE, vecY * config.FONT_SIZE))
+    if config.debug:
+        print(f"Time taken to translate image points: {time.time() - startT}s")
 
     # Set up symbol list for JUST_DISPLAY_MODE if toggled
     symbol_list = []

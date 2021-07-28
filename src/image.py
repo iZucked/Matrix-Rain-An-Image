@@ -1,7 +1,9 @@
+import numpy as np
 from PIL import Image
 import cv2
-from numpy import where
+import numpy as np
 import os
+import sys
 import math
 import pygame
 from config import config
@@ -11,100 +13,100 @@ import time
 
 class image:
     def __init__(self, filePath):
-        if not config.DRAW_LINES_OF_IMAGE:
-            try:
-                self.imgObj = Image.open(Path(filePath))
-            except:
-                print(f"ERROR: Can't open image at: {filePath}")
-                exit()
-        else:
-            # Do pre-processing if DRAW_LINES_OF_IMAGE is enabled
-            image = cv2.imread(filePath, cv2.IMREAD_GRAYSCALE)
-            if image is None:
-                print(f"ERROR: Can't open image at: {filePath}")
-                exit()
+        image = cv2.imread(filePath)
+
+        if image is None:
+            print(f"ERROR: Can't open image at: {filePath}")
+            exit()
+
+        if config.SINGLE_COLOR_SELECTION:
+            self.imgObj = image
+        # Do pre-processing if DRAW_LINES_OF_IMAGE is enabled
+        elif config.DRAW_LINES_OF_IMAGE:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             lines = cv2.Canny(image, 10, 200)
-            whitePx = where(lines == 255)
+            whitePx = np.where(lines == 255)
             cnts = cv2.findContours(lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
             for c in cnts:
                 cv2.drawContours(lines, [c], -1 , config.ISOLATE_COLOR ,thickness=config.LINE_THICKNESS)
-            if config.debug:
-                cv2.imshow("Image converted to lines",lines)
-                cv2.waitKey()
 
-            self.imgObj = Image.fromarray(lines)
+            # Convert back from graysacle([0-255]) to rgb([0-255,0-255,0-255])
+            self.imgObj = cv2.cvtColor(lines, cv2.COLOR_GRAY2RGB)
+
+            if config.debug:
+                cv2.imshow("Image converted", self.imgObj)
+                cv2.waitKey(0)
 
         self.path = filePath
-        self.imgScale = 1
         self.columnPositions = {}
-        self.readyToDraw = False
 
     def getDimensions(self):
-        return self.imgObj.size
+        y, x, _ = self.imgObj.shape
+        return x, y
 
     def getCentre(self):
-        x,y = self.getDimensions()
-        return (x/2,y/2)
+        x, y = self.getDimensions()
+        return x/2, y/2
 
     def scaleImage(self, scaleFactor):
         x, y = self.getDimensions()
-        newDimensions = (round(x*scaleFactor) , round(y*scaleFactor))
-        self.imgObj = self.imgObj.resize(newDimensions, resample=Image.LANCZOS)
+        newDimensions = (int(x*scaleFactor), int(y*scaleFactor))
+        self.imgObj = cv2.resize(self.imgObj, newDimensions, interpolation=cv2.INTER_AREA)
 
-    def isRegionThisColor(self, xStart, yStart, size, threshold, color):
-        # Get image data
-        rgb_img = self.imgObj.convert('RGB')
-        
-        # Number of occourances of colour specified
-        nOccurances = 0 
-        
-        r0,g0,b0 = color
-
-        for y in range(yStart, yStart + size):
-            for x in range(xStart, xStart + size):
-                r, g, b = rgb_img.getpixel((x,y))
-                
-                if config.debug:
-                    print(f'Pixel at : {x},{y} has color ({r},{g},{b})')
-                
-                if (r,g,b) == (r0,g0,b0):
-                    nOccurances+=1
-            
-        pOccurances = (nOccurances/math.pow(size,2))*100
-
-        if pOccurances >= threshold:
-            
-            return True
-        else:
-            return False
-    
         if config.debug:
-            print(f'Numer of occourances:{nOccurances}')
-            print(f'Percentage: {(nOccurances/math.pow(size,2))*100}%')        
+            print(f"New dimensions: {newDimensions}")
 
     def calculateAllThresholdPositions(self, threshold, size, color):
         width, length = self.getDimensions()
 
-        if config.debug:
-            print(f'Image Size: {width} x {length}')
+        # Apply mask to image
+        if config.SINGLE_COLOR_SELECTION:
+            mask = cv2.inRange(self.imgObj, color, color)
+        elif config.DRAW_LINES_OF_IMAGE:
+            mask = cv2.inRange(self.imgObj, (255,255,255), (255,255,255))
 
-        for x in range(0, width - size, size):
+        if config.debug:
+            cv2.imshow("Masked image", mask)
+            cv2.waitKey(0)
+
+        # Code provided by https://github.com/ilastik/lazyflow/blob/master/lazyflow/utility/blockwise_view.py, an absolute god send
+        # This compared to the other version is ~5000x faster
+        # Breaks image down to submatracies of sizexsize and then checks if the mask has values
+        blockshape = tuple((size, size))
+        outershape = tuple(np.array(mask.shape) // blockshape)
+        view_shape = outershape + blockshape
+
+        if config.debug:
+            print(f"block shape: {blockshape}")
+            print(f"outer shape: {outershape}")
+            print(f"View shape: {view_shape}")
+
+        # inner strides: strides within each block (same as original array)
+        intra_block_strides = mask.strides
+
+        # outer strides: strides from one block to another
+        inter_block_strides = tuple(mask.strides * np.array(blockshape))
+
+        # This is where the magic happens.
+        # Generate a view with our new strides (outer+inner).
+        subMatracies = np.lib.stride_tricks.as_strided(mask, shape=view_shape,
+                                                  strides=(inter_block_strides + intra_block_strides))
+
+        subLen, subWid, _, _ = subMatracies.shape
+
+        # Loop through all submatracies and
+        for x in range(0, subWid-1):
             yPositions = []
-            for y in range(0, length - size, size):
-                if config.debug:
-                    print(f'{x},{y} -> {x+size}, {y+size}')
-                if self.isRegionThisColor(x,y,size,threshold,color):
-                    yPositions.append(y)
-                    if config.debug:
-                        print("Met threshold!")
-                else:
-                    if config.debug:
-                        print("Didn't Meet threshold!")
-            yPositions.sort(reverse=True)
-            self.columnPositions.update({x : yPositions})
-        
-        self.readyToDraw = True
+            for y in range(0, subLen-1):
+                # Check if passes threshold occurances of color in submatrix
+                nOccerances = np.count_nonzero(subMatracies[y][x])
+                pOccuracnes = (nOccerances / math.pow(size,2))*100
+                if pOccuracnes >= config.THRESHOLD:
+                    yPositions.append(y*size)
+            if len(yPositions) > 0:
+                yPositions.sort(reverse=True)
+                self.columnPositions.update({x*size : yPositions})
 
     def translatePointsByVector(self, vector):
         if self.columnPositions != {}:
@@ -114,8 +116,6 @@ class image:
             self.columnPositions = newPoints
         else:
             print("Must calculate points to translate first")
-
-
 
     def getPositionsForColumn(self, columnPos):
         if self.columnHasPositions(columnPos):
@@ -152,7 +152,7 @@ def main():
     pygame.display.set_caption("Our sick window blud!!")
 
     # Open image and scale it
-    img = image(config.IMG_PATH)
+    img = image(sys.argv[1])
     img.scaleImage(config.IMG_SCALE)
     
     width, length = img.getDimensions()

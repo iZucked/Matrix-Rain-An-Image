@@ -6,12 +6,15 @@ import time
 NOT_PLACED  = 0x00
 PLACED      = 0x01
 
+pg.init()
+
+# Create our list of characters we can render which then is made in to a list of surfaces
+katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
+font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
+
+
 class Symbol:
     def __init__(self, x, y, speed, color):
-        # Create our list of characters we can render which then is made in to a list of surfaces
-        katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
-        font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE, bold=True)
-
         self.x, self.y = x, y
         self.speed = speed
         self.color = color
