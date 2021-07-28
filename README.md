@@ -1,7 +1,12 @@
 # Matrix-Rain-An-Image
 This project implements the classic Matrix digial rain effect in python with pygame to build up an image provided with multiple mode selection
 
-![example of just draw mode](example.gif)
+
+## Examples
+<center>
+ <img src="example.gif">
+ <img src="example.png">
+</center> 
 
 ## Features
 -   Isolate a single color from an image to be drawn
