@@ -2,4 +2,3 @@ opencv-python~=4.5.3.56
 pygame~=2.0.1
 image~=1.5.33
 numpy~=1.21.1
-Pillow~=8.3.1
