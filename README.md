@@ -12,9 +12,6 @@ vim src/config.py " Edit config
 python src/main.py images/logo.png" Run program with input image 
 ```
 
-## Notice
-The current version of the project is very inefficient and may take up to a minute to draw large images, this will be fixed at some point but can't confirm when :)
-
 ## Credits
 
 The foundations of this repo were built on the code provided by the [MATRIX-Digital-Rain](https://github.com/StanislavPetrovV/MATRIX-Digital-Rain) project so show some love there if you are to do so here :)
