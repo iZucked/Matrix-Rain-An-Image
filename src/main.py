@@ -35,7 +35,6 @@ def main():
     if not mode_check():
         return
 
-    # Init pygame
     pygame.init()
 
     # Set up image
@@ -57,9 +56,9 @@ def main():
         (Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT), pygame.RESIZABLE
     )
     pygame.display.set_caption("@CodeAccelerando on github")
-    bg = pygame.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
+    background = pygame.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
     alpha_value = Config.STARTING_ALPHA
-    bg.set_alpha(alpha_value)
+    background.set_alpha(alpha_value)
     clock = pygame.time.Clock()
 
     # Set image to be centred in the screen
@@ -76,7 +75,9 @@ def main():
 
     start_time = time.time()
     img.translate_points_by_vector(
-        (vec_x * Config.FONT_SIZE, vec_y * Config.FONT_SIZE))
+        (vec_x * Config.FONT_SIZE, vec_y * Config.FONT_SIZE)
+    )
+
     if Config.debug:
         print(
             f"Time taken to translate image points: {time.time() - start_time}s"
@@ -106,8 +107,8 @@ def main():
                 is_running = False
 
         # Create black background for screen
-        screen.blit(bg, (0, 0))
-        bg.fill(pygame.Color("black"))
+        screen.blit(background, (0, 0))
+        background.fill(pygame.Color("black"))
 
         if (
             Config.RAIN_ACCUMULATION_MODE
@@ -127,11 +128,11 @@ def main():
         elif Config.JUST_DISPLAY_MODE and toggle_drawing:
             for symbol in symbol_list:
                 symbol.update()
-                symbol.draw(bg)
+                symbol.draw(background)
 
         # Draw all columns
         for symbol_column in symbol_columns:
-            symbol_column.draw(bg)
+            symbol_column.draw(background)
 
         # Alpha max is 255 where there is no fading
         if (
@@ -139,7 +140,7 @@ def main():
                 and alpha_value < Config.ALPHA_LIMIT
         ):
             alpha_value += Config.FADE_ADJUSTMENT
-            bg.set_alpha(alpha_value)
+            background.set_alpha(alpha_value)
 
         # Check if user wants to start placing image
         keys_pressed = pygame.key.get_pressed()

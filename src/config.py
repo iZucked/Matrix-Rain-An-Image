@@ -33,7 +33,7 @@ class Config:
 
     # For screen fade effect
     STARTING_ALPHA = 60  # In range 0-255
-    ALPHA_LIMIT = 170  #
+    ALPHA_LIMIT = 170
     FADE_RATE = 15
     # How many frames till alpha value is increased by FADE_ADJUSTMENT
     FADE_ADJUSTMENT = 6

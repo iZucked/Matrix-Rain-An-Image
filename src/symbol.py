@@ -105,41 +105,27 @@ class SymbolColumn:
             white_symbol.color
         )
 
-    def get_white_symbol(self):
-        return self.symbols[0]
-
     def check_white_symbol(self):
         if (
-            self.get_white_symbol().get_y_position() == self.next_placement_pos
+            self.symbols[0].get_y_position() == self.next_placement_pos
             and self.next_placement_pos != -1
         ):
-            # print(f"placing white at: {self.nextPlacementPos}")
-            if len(self.placeable_positions) > 0:
-                self.next_placement_pos = self.placeable_positions.pop(0)
-            else:
-                self.next_placement_pos = -1  # Unreachable
+            self.next_placement_pos = (
+                self.placeable_positions.pop(0)
+                if len(self.placeable_positions) > 0 else -1
+            )
 
             self.place_white_symbol()
 
     def draw(self, surface):
-        # Check if we need to place any symbols
-        # self.checkWhiteSymbol()
-
-        # Draw all moving symbols
         for i, symbol in enumerate(self.symbols):
             if symbol.state == PLACED:
                 print(f"SYMBOL {symbol.x} should not be here!!!!!!!!!!!!")
 
-            # Update the symbol character and position
             symbol.update()
-
-            # Add fading effect in the column
             symbol.surface.set_alpha(i + (255 - (255 / self.column_height) * i))
-
-            # Draw symbol to surface
             symbol.draw(surface)
 
-        # Draw all placed symbols
         for symbol in self.placedSymbols:
             symbol.update()
             symbol.draw(surface)

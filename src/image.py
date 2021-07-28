@@ -183,28 +183,31 @@ def main():
 
         if not stop_drawing:
             stop_drawing = True
+            draw(win, img)
 
-            for x, y_positions in img.column_positions.items():
-                for y in y_positions:
-                    win.fill(
-                        (0, 0, 0),
-                        pygame.Rect(x, y, Config.FONT_SIZE, Config.FONT_SIZE)
-                    )
-
-                    win.fill(
-                        (255, 255, 255),
-                        pygame.Rect(
-                            x, y, Config.FONT_SIZE - 1, Config.FONT_SIZE - 1
-                        )
-                    )
-
-        # Getting events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 is_running = False
 
         pygame.display.update()
         clock.tick(Config.FADE_RATE)
+
+    pygame.display.quit()
+    pygame.quit()
+
+
+def draw(win, img):
+    for x, y_positions in img.column_positions.items():
+        for y in y_positions:
+            win.fill(
+                (0, 0, 0),
+                pygame.Rect(x, y, Config.FONT_SIZE, Config.FONT_SIZE)
+            )
+
+            win.fill(
+                (255, 255, 255),
+                pygame.Rect(x, y, Config.FONT_SIZE - 1, Config.FONT_SIZE - 1)
+            )
 
 
 if __name__ == "__main__":
