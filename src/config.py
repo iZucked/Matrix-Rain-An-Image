@@ -48,8 +48,5 @@ class Config:
     if ROOT_DIR.endswith('src'):
         ROOT_DIR = ROOT_DIR[:-3]
 
-    IMG_FILENAME = "logo.png"
-    IMG_PATH = os.path.join(ROOT_DIR, "images/" + IMG_FILENAME)
-    
     FONT_FILENAME = "MS Mincho.ttf"
     FONT_PATH = os.path.join(ROOT_DIR, "font/" + FONT_FILENAME)
