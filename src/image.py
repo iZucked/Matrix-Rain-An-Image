@@ -10,6 +10,7 @@ from config import Config
 
 
 class Image:
+
     def __init__(self, file_path):
         image = cv2.imread(file_path)
 
@@ -18,55 +19,59 @@ class Image:
             exit()
 
         if Config.SINGLE_COLOR_SELECTION:
-            self.imgObj = image
+            self.img_object = image
+
         # Do pre-processing if DRAW_LINES_OF_IMAGE is enabled
         elif Config.DRAW_LINES_OF_IMAGE:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             lines = cv2.Canny(image, 10, 200)
-            white_px = np.where(lines == 255)
-            cnts = cv2.findContours(
+
+            contours = cv2.findContours(
                 lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
-            cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-            for c in cnts:
-                cv2.drawContours(lines, [c], -1, Config.ISOLATE_COLOR,
-                                 thickness=Config.LINE_THICKNESS)
+            contours = contours[0] if len(contours) == 2 else contours[1]
+
+            for c in contours:
+                cv2.drawContours(
+                    lines, [c], -1, Config.ISOLATE_COLOR,
+                    thickness=Config.LINE_THICKNESS
+                )
 
             # Convert back from grayscale([0-255]) to rgb([0-255,0-255,0-255])
-            self.imgObj = cv2.cvtColor(lines, cv2.COLOR_GRAY2RGB)
+            self.img_object = cv2.cvtColor(lines, cv2.COLOR_GRAY2RGB)
 
             if Config.debug:
-                cv2.imshow("Image converted", self.imgObj)
+                cv2.imshow("Image converted", self.img_object)
                 cv2.waitKey(0)
 
         self.path = file_path
-        self.columnPositions = {}
+        self.column_positions = {}
 
     def get_dimensions(self):
-        y, x, _ = self.imgObj.shape
+        y, x, _ = self.img_object.shape
         return x, y
 
     def get_centre(self):
         x, y = self.get_dimensions()
         return x / 2, y / 2
 
-    def scale_image(self, scaleFactor):
+    def scale_image(self, scale_factor):
         x, y = self.get_dimensions()
-        new_dimensions = (int(x * scaleFactor), int(y * scaleFactor))
-        self.imgObj = cv2.resize(self.imgObj, new_dimensions,
-                                 interpolation=cv2.INTER_AREA)
+        new_dimensions = (int(x * scale_factor), int(y * scale_factor))
+
+        self.img_object = cv2.resize(
+            self.img_object, new_dimensions, interpolation=cv2.INTER_AREA
+        )
 
         if Config.debug:
             print(f"New dimensions: {new_dimensions}")
 
-    def calculate_all_threshold_positions(self, threshold, size, color):
-        width, length = self.get_dimensions()
-
+    def calculate_all_threshold_positions(self, size, color):
         # Apply mask to image
-        if Config.SINGLE_COLOR_SELECTION:
-            mask = cv2.inRange(self.imgObj, color, color)
-        elif Config.DRAW_LINES_OF_IMAGE:
-            mask = cv2.inRange(self.imgObj, (255, 255, 255), (255, 255, 255))
+        if not Config.SINGLE_COLOR_SELECTION:
+            color = (255, 255, 255)
+
+        mask = cv2.inRange(self.img_object, color, color)
 
         if Config.debug:
             cv2.imshow("Masked image", mask)
@@ -77,8 +82,8 @@ class Image:
         # an absolute god send
 
         # This compared to the other version is ~5000x faster
-        # Breaks image down to submatracies of sizexsize and then checks if the
-        # mask has values
+        # Breaks image down to sub matrices of size x size and then checks
+        # if the mask has values
         block_shape = tuple((size, size))
         outer_shape = tuple(np.array(mask.shape) // block_shape)
         view_shape = outer_shape + block_shape
@@ -101,38 +106,36 @@ class Image:
                     inter_block_strides + intra_block_strides
             ))
 
-        sub_len, subWid, _, _ = sub_matrices.shape
+        sub_len, sub_wid, _, _ = sub_matrices.shape
 
         # Loop through all sub matrices and
-        for x in range(subWid - 1):
-            y_positions = []
-            for y in range(sub_len - 1):
-                # Check if passes threshold occurances of color in submatrix
-                n_occurrences = np.count_nonzero(sub_matrices[y][x])
-                p_occurrences = (n_occurrences / math.pow(size, 2)) * 100
-                if p_occurrences >= Config.THRESHOLD:
-                    y_positions.append(y * size)
+        for x in range(sub_wid - 1):
+            y_positions = [
+                y * size for y in range(sub_len - 1) if (
+                    np.count_nonzero(sub_matrices[y][x]) / math.pow(size, 2)
+                ) * 100 >= Config.THRESHOLD
+            ]
+
             if y_positions:
                 y_positions.sort(reverse=True)
-                self.columnPositions.update({x * size: y_positions})
+                self.column_positions[x * size] = y_positions
 
     def translate_points_by_vector(self, vector):
-        if self.columnPositions != {}:
-            vec_x, vec_y = vector
-            new_points = {}
-            new_points = {
-                xPos + vec_x: [yPos + vec_y for yPos in y_positions]
-                for (xPos, y_positions) in self.columnPositions.items()
-            }
-            self.columnPositions = new_points
-        else:
+        if self.column_positions == {}:
             print("Must calculate points to translate first")
+            return
+
+        vec_x, vec_y = vector
+
+        self.column_positions = {
+            xPos + vec_x: [yPos + vec_y for yPos in y_positions]
+            for (xPos, y_positions) in self.column_positions.items()
+        }
 
     def get_positions_for_column(self, column_pos):
         if self.column_has_positions(column_pos):
-            return self.columnPositions[column_pos]
-        else:
-            return []
+            return self.column_positions[column_pos]
+        return []
 
     def columns_left_to_place(self):
         return any(
@@ -140,26 +143,19 @@ class Image:
         )
 
     def column_has_positions(self, column_pos):
-        if column_pos in self.columnPositions:
-            return len(self.columnPositions[column_pos]) > 0
-        else:
-            return False
+        if column_pos in self.column_positions:
+            return len(self.column_positions[column_pos]) > 0
+        return False
 
     def get_next_position_for_column(self, column_num):
-        return self.columnPositions[column_num][0]
+        return self.column_positions[column_num][0]
 
     def get_columns(self):
-        return self.columnPositions.keys()
-
-    def get_num_columns(self):
-        return len(self.columnPositions.keys())
+        return self.column_positions.keys()
 
 
 def main():
-    # Define clock for fps
     clock = pygame.time.Clock()
-
-    # Set window title
     pygame.display.set_caption("Image to font boxes calculated")
 
     # Open image and scale it
@@ -171,27 +167,25 @@ def main():
 
     start = time.time()
     img.calculate_all_threshold_positions(
-        Config.THRESHOLD, Config.FONT_SIZE, Config.ISOLATE_COLOR
+        Config.FONT_SIZE, Config.ISOLATE_COLOR
     )
-    finish = time.time()
 
+    finish = time.time()
     print(f"Finished calculating points in {finish - start} seconds")
 
     if not img.columns_left_to_place():
         print("Couldn't calculate any positions to draw")
-        quit()
+        return
 
     stop_drawing = False
-
-    while True:
-        # Let clock tick
-        clock.tick(Config.FADE_RATE)
+    is_running = True
+    while is_running:
 
         if not stop_drawing:
             stop_drawing = True
 
-            for x, yPositions in img.columnPositions.items():
-                for y in yPositions:
+            for x, y_positions in img.column_positions.items():
+                for y in y_positions:
                     win.fill(
                         (0, 0, 0),
                         pygame.Rect(x, y, Config.FONT_SIZE, Config.FONT_SIZE)
@@ -207,10 +201,10 @@ def main():
         # Getting events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quit()
+                is_running = False
 
-        # Update frame
         pygame.display.update()
+        clock.tick(Config.FADE_RATE)
 
 
 if __name__ == "__main__":

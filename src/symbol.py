@@ -16,12 +16,15 @@ font = pygame.font.Font(Config.FONT_PATH, Config.FONT_SIZE)
 
 
 class Symbol:
+
     def __init__(self, x, y, speed, color):
         self.x, self.y = x, y
         self.speed = speed
         self.color = color
+
         self.interval = randrange(5, 30)
         self.state = NOT_PLACED
+
         self.charSet = [font.render(char, True, color) for char in katakana]
         self.surface = choice(self.charSet)
 
@@ -35,8 +38,6 @@ class Symbol:
             self.y = self.y + self.speed \
                 if self.y < Config.SCREEN_HEIGHT else -Config.FONT_SIZE
 
-        return self
-
     def draw(self, surface):
         surface.blit(self.surface, (self.x, self.y))
 
@@ -48,45 +49,55 @@ class Symbol:
 
 
 class SymbolColumn:
+
     def __init__(self, pos_x, start_y, placeable_positions_list):
         min_length = 8
         max_length = 35
+
         self.startY = start_y
         self.x = pos_x
         self.column_height = randrange(min_length, max_length)
-        if Config.RAIN_ACCUMULATION_MODE:
-            self.speed = Config.FONT_SIZE
-        else:
-            min_speed = 3
-            max_speed = 8
 
-            self.speed = randrange(min_speed, max_speed)
+        self.speed = Config.FONT_SIZE if Config.RAIN_ACCUMULATION_MODE else (
+            randrange(3, 8)
+        )
+
         self.symbols = []
         self.placedSymbols = []
-        self.placeablePositions = placeable_positions_list
+        self.placeable_positions = placeable_positions_list
+        self.next_placement_pos = 0
 
-        n = 0
-        for i in range(start_y, start_y - Config.FONT_SIZE * self.column_height,
-                       -Config.FONT_SIZE):
+        for n, i in enumerate(
+            range(
+                start_y,
+                start_y - Config.FONT_SIZE * self.column_height,
+                -Config.FONT_SIZE
+            )
+        ):
             if n == 0:
                 # Let first symbol be white
                 self.symbols.append(
-                    Symbol(pos_x, i, self.speed, pygame.Color('white')))
+                    Symbol(pos_x, i, self.speed, pygame.Color('white'))
+                )
+
             elif n % 2:
                 self.symbols.append(
-                    Symbol(pos_x, i, self.speed, (40, randrange(160, 256), 40)))
+                    Symbol(pos_x, i, self.speed, (40, randrange(160, 256), 40))
+                )
+
             else:
                 self.symbols.append(
-                    Symbol(pos_x, i, self.speed, pygame.Color('lightgreen')))
-
-            n = +1
+                    Symbol(pos_x, i, self.speed, pygame.Color('lightgreen'))
+                )
 
     def place_white_symbol(self):
         # Add placed symbol and replace with new one
         copy_list = self.symbols.copy()
         white_symbol = copy_list[0]
         white_symbol.stop_moving()
+
         self.placedSymbols.append(white_symbol)
+
         self.symbols[0] = Symbol(
             white_symbol.x,
             white_symbol.y,
@@ -103,8 +114,8 @@ class SymbolColumn:
             and self.next_placement_pos != -1
         ):
             # print(f"placing white at: {self.nextPlacementPos}")
-            if len(self.placeablePositions) > 0:
-                self.next_placement_pos = self.placeablePositions.pop(0)
+            if len(self.placeable_positions) > 0:
+                self.next_placement_pos = self.placeable_positions.pop(0)
             else:
                 self.next_placement_pos = -1  # Unreachable
 
@@ -131,4 +142,4 @@ class SymbolColumn:
         # Draw all placed symbols
         for symbol in self.placedSymbols:
             symbol.update()
-            surface.blit(symbol.surface, (symbol.x, symbol.y))
+            symbol.draw(surface)
