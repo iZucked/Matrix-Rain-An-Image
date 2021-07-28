@@ -3,7 +3,11 @@ This project implements the classic Matrix digital rain effect in
 python with pygame to build up an image provided with multiple mode 
 selection
 
-![example of just draw mode](example.gif)
+## Examples
+<center>
+ <img src="example.gif">
+ <img src="example.png">
+</center>
 
 ## Features
 
@@ -14,12 +18,12 @@ selection
 ## Install & Usage
 
 1. Clone repo
-    ```git
+    ```vim
     git clone "https://github.com/CodeAccelerando/Matrix-Rain-An-Image.git"
     ```
 
 2. Make sure to have requirements installed
-    ```bash
+    ```vim
     pip install requirements.txt
     ```
 
@@ -31,7 +35,7 @@ selection
 
 4. Run program with input image 
     ```vim
-    python -m src/main.py images/logo.png
+    python -m src/main.py images/garf.jpg
     ```
 
 ## Credits
