@@ -202,8 +202,8 @@ def draw(win, img):
 
     for x, y_positions in img.column_positions.items():
         for y in y_positions:
-            win.fill((0, 0, 0), pygame.Rect(x, y, white_square_size))
-            win.fill((255, 255, 255), pygame.Rect(x, y, black_square_size))
+            win.fill((0, 0, 0), pygame.Rect((x, y), white_square_size))
+            win.fill((255, 255, 255), pygame.Rect((x, y), black_square_size))
 
 
 if __name__ == "__main__":
