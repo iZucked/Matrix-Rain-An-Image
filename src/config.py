@@ -11,14 +11,14 @@ class config:
     JUST_DISPLAY_MODE = True  # Displays all the symbols at once
 
     # Image Processing Modes
-    SINGLE_COLOR_SELECTION = True  # Selects an ISOLATE_COLOR and draws a symbol where found in a FONT_SIZE x FONT_SIZE square
-    DRAW_LINES_OF_IMAGE = False
-    LINE_THICKNESS = 2  # If DRAW_LINES_OF_IMAGE is chosen the lines of an image must be big enough to fit a FONT_SIZE x FONT_SIZE square of white pixels (change and enable debug to see difference)
+    SINGLE_COLOR_SELECTION = False  # Selects an ISOLATE_COLOR and draws a symbol where found in a FONT_SIZE x FONT_SIZE square
+    DRAW_LINES_OF_IMAGE = True
+    LINE_THICKNESS = 3  # If DRAW_LINES_OF_IMAGE is chosen the lines of an image must be big enough to fit a FONT_SIZE x FONT_SIZE square of white pixels (change and enable debug to see difference)
 
     # Window related
     SCREEN_WIDTH = 1260
     SCREEN_HEIGHT = 800
-    FONT_SIZE = 10
+    FONT_SIZE = 7
     FPS_LIMIT = 60
 
     # Image related
@@ -34,9 +34,6 @@ class config:
 
     # Paths
     ROOT_DIR = os.getcwd()
-
-    IMG_FILENAME = "logo.png"
-    IMG_PATH = os.path.join(ROOT_DIR, "images/" + IMG_FILENAME)
 
     FONT_FILENAME = "MS Mincho.ttf"
     FONT_PATH = os.path.join(ROOT_DIR, "font/" + FONT_FILENAME)
