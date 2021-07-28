@@ -11,6 +11,7 @@ class Config:
     JUST_DISPLAY_MODE = True  # Displays all the symbols at once
 
     # Image Processing Modes
+
     SINGLE_COLOR_SELECTION = True
     # Selects an ISOLATE_COLOR and draws a symbol where found in a
     # FONT_SIZE x FONT_SIZE square
@@ -22,6 +23,7 @@ class Config:
     # Window related
     SCREEN_WIDTH = 1260
     SCREEN_HEIGHT = 800
+
     SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
     FONT_SIZE = 10
@@ -48,6 +50,6 @@ class Config:
 
     IMG_FILENAME = "logo.png"
     IMG_PATH = os.path.join(ROOT_DIR, "images/" + IMG_FILENAME)
-
+    
     FONT_FILENAME = "MS Mincho.ttf"
     FONT_PATH = os.path.join(ROOT_DIR, "font/" + FONT_FILENAME)

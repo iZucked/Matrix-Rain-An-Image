@@ -3,6 +3,7 @@ This project implements the classic Matrix digital rain effect in
 python with pygame to build up an image provided with multiple mode 
 selection
 
+
 ## Examples
 <center>
  <img src="example.gif">
