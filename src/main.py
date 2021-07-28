@@ -1,12 +1,13 @@
 import os
 import sys
-import cv2
-import pygame as pg
-from random import choice, randrange
-from image import image
-from config import Config
-from symbol import Symbol, SymbolColumn
 import time
+from random import randrange
+
+import pygame as pg
+
+from config import Config
+from image import image
+from symbol import Symbol, SymbolColumn
 
 os.environ["SDL_VIDEO_CENTERED"] = "1"
 

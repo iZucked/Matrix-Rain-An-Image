@@ -1,7 +1,8 @@
-import pygame as pg
 from random import choice, randrange
+
+import pygame as pg
+
 from config import Config
-import time
 
 NOT_PLACED = 0x00
 PLACED = 0x01
