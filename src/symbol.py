@@ -1,18 +1,18 @@
 from random import choice, randrange
 
-import pygame as pg
+import pygame
 
 from config import Config
 
 NOT_PLACED = 0x00
 PLACED = 0x01
 
-pg.init()
+pygame.init()
 
 # Create our list of characters we can render which then is made in to a
 # list of surfaces
 katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
-font = pg.font.Font(Config.FONT_PATH, Config.FONT_SIZE)
+font = pygame.font.Font(Config.FONT_PATH, Config.FONT_SIZE)
 
 
 class Symbol:
@@ -26,7 +26,7 @@ class Symbol:
         self.surface = choice(self.charSet)
 
     def update(self):
-        frames = pg.time.get_ticks()
+        frames = pygame.time.get_ticks()
 
         if not frames % self.interval:
             self.surface = choice(self.charSet)
@@ -71,13 +71,13 @@ class SymbolColumn:
             if n == 0:
                 # Let first symbol be white
                 self.symbols.append(
-                    Symbol(pos_x, i, self.speed, pg.Color('white')))
+                    Symbol(pos_x, i, self.speed, pygame.Color('white')))
             elif n % 2:
                 self.symbols.append(
                     Symbol(pos_x, i, self.speed, (40, randrange(160, 256), 40)))
             else:
                 self.symbols.append(
-                    Symbol(pos_x, i, self.speed, pg.Color('lightgreen')))
+                    Symbol(pos_x, i, self.speed, pygame.Color('lightgreen')))
 
             n = +1
 

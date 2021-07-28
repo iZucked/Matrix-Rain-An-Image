@@ -3,7 +3,7 @@ import sys
 import time
 from random import randrange
 
-import pygame as pg
+import pygame
 
 from config import Config
 from image import Image
@@ -29,7 +29,7 @@ def main():
         exit()
 
     # Init pygame
-    pg.init()
+    pygame.init()
 
     # Set up image
     img = Image(sys.argv[1])
@@ -42,14 +42,14 @@ def main():
         print(f"Time taken to calculate image points: {time.time() - startT}s")
 
     # Set up screen
-    screen = pg.display.set_mode(
-        (Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT), pg.RESIZABLE
+    screen = pygame.display.set_mode(
+        (Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT), pygame.RESIZABLE
     )
-    pg.display.set_caption("@CodeAccelerando on github")
-    bg = pg.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
+    pygame.display.set_caption("@CodeAccelerando on github")
+    bg = pygame.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
     alpha_value = Config.STARTING_ALPHA
     bg.set_alpha(alpha_value)
-    clock = pg.time.Clock()
+    clock = pygame.time.Clock()
 
     # Set image to be centred in the screen
     screen_centre = (Config.SCREEN_WIDTH / 2, Config.SCREEN_HEIGHT / 2)
@@ -72,7 +72,7 @@ def main():
     if Config.JUST_DISPLAY_MODE:
         for x, yPositions in img.columnPositions.items():
             for y in yPositions:
-                symbol_list.append(Symbol(x, y, 0, pg.Color("white")))
+                symbol_list.append(Symbol(x, y, 0, pygame.Color("white")))
 
     # Create a column for each (x, x + FONT_SIZE) in the screen
     symbol_columns = [
@@ -85,13 +85,13 @@ def main():
     is_running = True
     while is_running:
         # Check for events
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 is_running = False
 
         # Create black background for screen
         screen.blit(bg, (0, 0))
-        bg.fill(pg.Color("black"))
+        bg.fill(pygame.Color("black"))
 
         if Config.RAIN_ACCUMULATION_MODE and TOGLE_DRAWING:
             if img.columns_left_to_place():
@@ -114,22 +114,22 @@ def main():
 
         # Alpha max is 255 where there is no fading
         if (
-                not pg.time.get_ticks() % Config.FADE_RATE
+                not pygame.time.get_ticks() % Config.FADE_RATE
                 and alpha_value < Config.ALPHA_LIMIT
         ):
             alpha_value += Config.FADE_ADJUSTMENT
             bg.set_alpha(alpha_value)
 
         # Check if user wants to start placing image
-        keys_pressed = pg.key.get_pressed()
-        if keys_pressed[pg.K_RETURN]:
+        keys_pressed = pygame.key.get_pressed()
+        if keys_pressed[pygame.K_RETURN]:
             TOGLE_DRAWING = not TOGLE_DRAWING
 
-        pg.display.update()
+        pygame.display.update()
         clock.tick(Config.FPS_LIMIT)
 
-    pg.display.quit()
-    pg.quit()
+    pygame.display.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":
