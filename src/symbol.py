@@ -1,6 +1,6 @@
 import pygame as pg
 from random import choice, randrange
-from config import config
+from config import Config
 import time
 
 NOT_PLACED = 0x00
@@ -11,7 +11,7 @@ pg.init()
 # Create our list of characters we can render which then is made in to a
 # list of surfaces
 katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
-font = pg.font.Font(config.FONT_PATH, config.FONT_SIZE)
+font = pg.font.Font(Config.FONT_PATH, Config.FONT_SIZE)
 
 
 class Symbol:
@@ -32,14 +32,14 @@ class Symbol:
 
         if self.state == NOT_PLACED:
             self.y = self.y + self.speed \
-                if self.y < config.SCREEN_HEIGHT else -config.FONT_SIZE
+                if self.y < Config.SCREEN_HEIGHT else -Config.FONT_SIZE
 
         return self
 
     def draw(self, surface):
         surface.blit(self.surface, (self.x, self.y))
 
-    def getYPosition(self):
+    def get_y_position(self):
         return self.y
 
     def stop_moving(self):
@@ -47,63 +47,67 @@ class Symbol:
 
 
 class SymbolColumn:
-    def __init__(self, xPos, startY, placeablePositionsList):
-        minLength = 8
-        maxLength = 35
-        self.startY = startY
-        self.x = xPos
-        self.column_height = randrange(minLength, maxLength)
-        if config.RAIN_ACCUMULATION_MODE:
-            self.speed = config.FONT_SIZE
+    def __init__(self, pos_x, start_y, placeable_positions_list):
+        min_length = 8
+        max_length = 35
+        self.startY = start_y
+        self.x = pos_x
+        self.column_height = randrange(min_length, max_length)
+        if Config.RAIN_ACCUMULATION_MODE:
+            self.speed = Config.FONT_SIZE
         else:
-            minSpeed = 3
-            maxSpeed = 8
+            min_speed = 3
+            max_speed = 8
 
-            self.speed = randrange(minSpeed, maxSpeed)
+            self.speed = randrange(min_speed, max_speed)
         self.symbols = []
         self.placedSymbols = []
-        self.placeablePositions = placeablePositionsList
+        self.placeablePositions = placeable_positions_list
 
         n = 0
-        for i in range(startY, startY - config.FONT_SIZE * self.column_height,
-                       -config.FONT_SIZE):
+        for i in range(start_y, start_y - Config.FONT_SIZE * self.column_height,
+                       -Config.FONT_SIZE):
             if n == 0:
                 # Let first symbol be white
                 self.symbols.append(
-                    Symbol(xPos, i, self.speed, pg.Color('white')))
+                    Symbol(pos_x, i, self.speed, pg.Color('white')))
             elif n % 2:
                 self.symbols.append(
-                    Symbol(xPos, i, self.speed, (40, randrange(160, 256), 40)))
+                    Symbol(pos_x, i, self.speed, (40, randrange(160, 256), 40)))
             else:
                 self.symbols.append(
-                    Symbol(xPos, i, self.speed, pg.Color('lightgreen')))
+                    Symbol(pos_x, i, self.speed, pg.Color('lightgreen')))
 
             n = +1
 
-    def placeWhiteSymbol(self):
+    def place_white_symbol(self):
         # Add placed symbol and replace with new one
         copy_list = self.symbols.copy()
-        whiteSymbol = copy_list[0]
-        whiteSymbol.stop_moving()
-        self.placedSymbols.append(whiteSymbol)
-        self.symbols[0] = Symbol(whiteSymbol.x, whiteSymbol.y,
-                                 whiteSymbol.speed, whiteSymbol.color)
+        white_symbol = copy_list[0]
+        white_symbol.stop_moving()
+        self.placedSymbols.append(white_symbol)
+        self.symbols[0] = Symbol(
+            white_symbol.x,
+            white_symbol.y,
+            white_symbol.speed,
+            white_symbol.color
+        )
 
-    def getWhiteSymbol(self):
+    def get_white_symbol(self):
         return self.symbols[0]
 
-    def checkWhiteSymbol(self):
+    def check_white_symbol(self):
         if (
-                self.getWhiteSymbol().getYPosition() == self.nextPlacementPos
-                and self.nextPlacementPos != -1
+            self.get_white_symbol().get_y_position() == self.next_placement_pos
+            and self.next_placement_pos != -1
         ):
             # print(f"placing white at: {self.nextPlacementPos}")
             if len(self.placeablePositions) > 0:
-                self.nextPlacementPos = self.placeablePositions.pop(0)
+                self.next_placement_pos = self.placeablePositions.pop(0)
             else:
-                self.nextPlacementPos = -1  # Unreachable
+                self.next_placement_pos = -1  # Unreachable
 
-            self.placeWhiteSymbol()
+            self.place_white_symbol()
 
     def draw(self, surface):
         # Check if we need to place any symbols

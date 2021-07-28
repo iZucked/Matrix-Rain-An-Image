@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 
-class config:
+class Config:
     # Enable or disable debug messages
     debug = False
 

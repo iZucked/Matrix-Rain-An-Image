@@ -6,70 +6,71 @@ import os
 import sys
 import math
 import pygame
-from config import config
+from config import Config
 from pathlib import Path
 import time
 
 
 class image:
-    def __init__(self, filePath):
-        image = cv2.imread(filePath)
+    def __init__(self, file_path):
+        image = cv2.imread(file_path)
 
         if image is None:
-            print(f"ERROR: Can't open image at: {filePath}")
+            print(f"ERROR: Can't open image at: {file_path}")
             exit()
 
-        if config.SINGLE_COLOR_SELECTION:
+        if Config.SINGLE_COLOR_SELECTION:
             self.imgObj = image
         # Do pre-processing if DRAW_LINES_OF_IMAGE is enabled
-        elif config.DRAW_LINES_OF_IMAGE:
+        elif Config.DRAW_LINES_OF_IMAGE:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             lines = cv2.Canny(image, 10, 200)
-            whitePx = np.where(lines == 255)
-            cnts = cv2.findContours(lines, cv2.RETR_EXTERNAL,
-                                    cv2.CHAIN_APPROX_SIMPLE)
+            white_px = np.where(lines == 255)
+            cnts = cv2.findContours(
+                lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
             cnts = cnts[0] if len(cnts) == 2 else cnts[1]
             for c in cnts:
-                cv2.drawContours(lines, [c], -1, config.ISOLATE_COLOR,
-                                 thickness=config.LINE_THICKNESS)
+                cv2.drawContours(lines, [c], -1, Config.ISOLATE_COLOR,
+                                 thickness=Config.LINE_THICKNESS)
 
-            # Convert back from graysacle([0-255]) to rgb([0-255,0-255,0-255])
+            # Convert back from grayscale([0-255]) to rgb([0-255,0-255,0-255])
             self.imgObj = cv2.cvtColor(lines, cv2.COLOR_GRAY2RGB)
 
-            if config.debug:
+            if Config.debug:
                 cv2.imshow("Image converted", self.imgObj)
                 cv2.waitKey(0)
 
-        self.path = filePath
+        self.path = file_path
         self.columnPositions = {}
 
-    def getDimensions(self):
+    def get_dimensions(self):
         y, x, _ = self.imgObj.shape
         return x, y
 
-    def getCentre(self):
-        x, y = self.getDimensions()
+    def get_centre(self):
+        x, y = self.get_dimensions()
         return x / 2, y / 2
 
-    def scaleImage(self, scaleFactor):
-        x, y = self.getDimensions()
-        newDimensions = (int(x * scaleFactor), int(y * scaleFactor))
-        self.imgObj = cv2.resize(self.imgObj, newDimensions,
+    def scale_image(self, scaleFactor):
+        x, y = self.get_dimensions()
+        new_dimensions = (int(x * scaleFactor), int(y * scaleFactor))
+        self.imgObj = cv2.resize(self.imgObj, new_dimensions,
                                  interpolation=cv2.INTER_AREA)
 
-        if config.debug:
-            print(f"New dimensions: {newDimensions}")
+        if Config.debug:
+            print(f"New dimensions: {new_dimensions}")
 
-    def calculateAllThresholdPositions(self, threshold, size, color):
-        width, length = self.getDimensions()
+    def calculate_all_threshold_positions(self, threshold, size, color):
+        width, length = self.get_dimensions()
 
         # Apply mask to image
-        if config.SINGLE_COLOR_SELECTION:
+        if Config.SINGLE_COLOR_SELECTION:
             mask = cv2.inRange(self.imgObj, color, color)
-        elif config.DRAW_LINES_OF_IMAGE:
+        elif Config.DRAW_LINES_OF_IMAGE:
             mask = cv2.inRange(self.imgObj, (255, 255, 255), (255, 255, 255))
 
-        if config.debug:
+        if Config.debug:
             cv2.imshow("Masked image", mask)
             cv2.waitKey(0)
 
@@ -80,77 +81,79 @@ class image:
         # This compared to the other version is ~5000x faster
         # Breaks image down to submatracies of sizexsize and then checks if the
         # mask has values
-        blockshape = tuple((size, size))
-        outershape = tuple(np.array(mask.shape) // blockshape)
-        view_shape = outershape + blockshape
+        block_shape = tuple((size, size))
+        outer_shape = tuple(np.array(mask.shape) // block_shape)
+        view_shape = outer_shape + block_shape
 
-        if config.debug:
-            print(f"block shape: {blockshape}")
-            print(f"outer shape: {outershape}")
+        if Config.debug:
+            print(f"block shape: {block_shape}")
+            print(f"outer shape: {outer_shape}")
             print(f"View shape: {view_shape}")
 
         # inner strides: strides within each block (same as original array)
         intra_block_strides = mask.strides
 
         # outer strides: strides from one block to another
-        inter_block_strides = tuple(mask.strides * np.array(blockshape))
+        inter_block_strides = tuple(mask.strides * np.array(block_shape))
 
         # This is where the magic happens.
         # Generate a view with our new strides (outer+inner).
-        subMatracies = np.lib.stride_tricks.as_strided(
+        sub_matrices = np.lib.stride_tricks.as_strided(
             mask, shape=view_shape, strides=(
                     inter_block_strides + intra_block_strides
             ))
 
-        subLen, subWid, _, _ = subMatracies.shape
+        sub_len, subWid, _, _ = sub_matrices.shape
 
-        # Loop through all submatracies and
+        # Loop through all sub matrices and
         for x in range(subWid - 1):
-            yPositions = []
-            for y in range(subLen - 1):
+            y_positions = []
+            for y in range(sub_len - 1):
                 # Check if passes threshold occurances of color in submatrix
-                nOccerances = np.count_nonzero(subMatracies[y][x])
-                pOccuracnes = (nOccerances / math.pow(size, 2)) * 100
-                if pOccuracnes >= config.THRESHOLD:
-                    yPositions.append(y * size)
-            if yPositions:
-                yPositions.sort(reverse=True)
-                self.columnPositions.update({x * size: yPositions})
+                n_occurrences = np.count_nonzero(sub_matrices[y][x])
+                p_occurrences = (n_occurrences / math.pow(size, 2)) * 100
+                if p_occurrences >= Config.THRESHOLD:
+                    y_positions.append(y * size)
+            if y_positions:
+                y_positions.sort(reverse=True)
+                self.columnPositions.update({x * size: y_positions})
 
-    def translatePointsByVector(self, vector):
+    def translate_points_by_vector(self, vector):
         if self.columnPositions != {}:
-            vecX, vecY = vector
-            newPoints = {}
-            newPoints = {xPos + vecX: [yPos + vecY for yPos in yPositons] for
-                         (xPos, yPositons) in self.columnPositions.items()}
-            self.columnPositions = newPoints
+            vec_x, vec_y = vector
+            new_points = {}
+            new_points = {
+                xPos + vec_x: [yPos + vec_y for yPos in y_positions]
+                for (xPos, y_positions) in self.columnPositions.items()
+            }
+            self.columnPositions = new_points
         else:
             print("Must calculate points to translate first")
 
-    def getPositionsForColumn(self, columnPos):
-        if self.columnHasPositions(columnPos):
-            return self.columnPositions[columnPos]
+    def get_positions_for_column(self, column_pos):
+        if self.column_has_positions(column_pos):
+            return self.columnPositions[column_pos]
         else:
             return []
 
-    def columnsLeftToPlace(self):
+    def columns_left_to_place(self):
         return any(
-            self.columnHasPositions(column) for column in self.getColumns()
+            self.column_has_positions(column) for column in self.get_columns()
         )
 
-    def columnHasPositions(self, columnPos):
-        if columnPos in self.columnPositions:
-            return len(self.columnPositions[columnPos]) > 0
+    def column_has_positions(self, column_pos):
+        if column_pos in self.columnPositions:
+            return len(self.columnPositions[column_pos]) > 0
         else:
             return False
 
-    def getNextPositionForColumn(self, columnNum):
-        return self.columnPositions[columnNum][0]
+    def get_next_position_for_column(self, column_num):
+        return self.columnPositions[column_num][0]
 
-    def getColumns(self):
+    def get_columns(self):
         return self.columnPositions.keys()
 
-    def getNumColumns(self):
+    def get_num_columns(self):
         return len(self.columnPositions.keys())
 
 
@@ -163,39 +166,46 @@ def main():
 
     # Open image and scale it
     img = image(sys.argv[1])
-    img.scaleImage(config.IMG_SCALE)
+    img.scale_image(Config.IMG_SCALE)
 
-    width, length = img.getDimensions()
-    WIN = pygame.display.set_mode((width, length))
+    width, length = img.get_dimensions()
+    win = pygame.display.set_mode((width, length))
 
     start = time.time()
-    img.calculateAllThresholdPositions(
-        config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR
+    img.calculate_all_threshold_positions(
+        Config.THRESHOLD, Config.FONT_SIZE, Config.ISOLATE_COLOR
     )
     finish = time.time()
 
     print(f"Finished calculating points in {finish - start} seconds")
 
-    if not img.columnsLeftToPlace():
+    if not img.columns_left_to_place():
         print("Couldn't calculate any positions to draw")
         quit()
 
-    stopDrawing = False
+    stop_drawing = False
 
     while True:
         # Let clock tick
-        clock.tick(config.FADE_RATE)
+        clock.tick(Config.FADE_RATE)
 
-        if not stopDrawing:
-            stopDrawing = True
+        if not stop_drawing:
+            stop_drawing = True
 
             for x, yPositions in img.columnPositions.items():
                 for y in yPositions:
-                    WIN.fill((0, 0, 0), (
-                        pygame.Rect(x, y, config.FONT_SIZE, config.FONT_SIZE)))
-                    WIN.fill((255, 255, 255), (
-                        pygame.Rect(x, y, config.FONT_SIZE - 1,
-                                    config.FONT_SIZE - 1)))
+                    win.fill(
+                        (0, 0, 0),
+                        pygame.Rect(x, y, Config.FONT_SIZE, Config.FONT_SIZE)
+                    )
+
+                    win.fill(
+                        (255, 255, 255),
+                        pygame.Rect(
+                            x, y, Config.FONT_SIZE - 1, Config.FONT_SIZE - 1
+                        )
+                    )
+
         # Getting events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
