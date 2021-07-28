@@ -9,7 +9,7 @@ import pygame
 from config import Config
 
 
-class image:
+class Image:
     def __init__(self, file_path):
         image = cv2.imread(file_path)
 
@@ -163,7 +163,7 @@ def main():
     pygame.display.set_caption("Image to font boxes calculated")
 
     # Open image and scale it
-    img = image(sys.argv[1])
+    img = Image(sys.argv[1])
     img.scale_image(Config.IMG_SCALE)
 
     width, length = img.get_dimensions()

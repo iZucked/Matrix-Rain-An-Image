@@ -6,7 +6,7 @@ from random import randrange
 import pygame as pg
 
 from config import Config
-from image import image
+from image import Image
 from symbol import Symbol, SymbolColumn
 
 os.environ["SDL_VIDEO_CENTERED"] = "1"
@@ -32,7 +32,7 @@ def main():
     pg.init()
 
     # Set up image
-    img = image(sys.argv[1])
+    img = Image(sys.argv[1])
     img.scale_image(Config.IMG_SCALE)
     startT = time.time()
     img.calculate_all_threshold_positions(
@@ -82,11 +82,12 @@ def main():
         for x in range(0, Config.SCREEN_WIDTH, Config.FONT_SIZE)
     ]
 
-    while True:
+    is_running = True
+    while is_running:
         # Check for events
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                pg.quit()
+                is_running = False
 
         # Create black background for screen
         screen.blit(bg, (0, 0))
@@ -126,6 +127,9 @@ def main():
 
         pg.display.update()
         clock.tick(Config.FPS_LIMIT)
+
+    pg.display.quit()
+    pg.quit()
 
 
 if __name__ == "__main__":
