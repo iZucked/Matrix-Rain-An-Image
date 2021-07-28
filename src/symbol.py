@@ -105,9 +105,12 @@ class SymbolColumn:
             white_symbol.color
         )
 
+    def get_white_symbol(self):
+        return self.symbols[0]
+
     def check_white_symbol(self):
         if (
-            self.symbols[0].get_y_position() == self.next_placement_pos
+            self.get_white_symbol().get_y_position() == self.next_placement_pos
             and self.next_placement_pos != -1
         ):
             self.next_placement_pos = (

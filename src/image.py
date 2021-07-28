@@ -197,17 +197,13 @@ def main():
 
 
 def draw(win, img):
+    white_square_size = (Config.FONT_SIZE, Config.FONT_SIZE)
+    black_square_size = (Config.FONT_SIZE - 1, Config.FONT_SIZE - 1)
+
     for x, y_positions in img.column_positions.items():
         for y in y_positions:
-            win.fill(
-                (0, 0, 0),
-                pygame.Rect(x, y, Config.FONT_SIZE, Config.FONT_SIZE)
-            )
-
-            win.fill(
-                (255, 255, 255),
-                pygame.Rect(x, y, Config.FONT_SIZE - 1, Config.FONT_SIZE - 1)
-            )
+            win.fill((0, 0, 0), pygame.Rect(x, y, white_square_size))
+            win.fill((255, 255, 255), pygame.Rect(x, y, black_square_size))
 
 
 if __name__ == "__main__":

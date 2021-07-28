@@ -37,7 +37,6 @@ def main():
 
     pygame.init()
 
-    # Set up image
     img = Image(sys.argv[1])
     img.scale_image(Config.IMG_SCALE)
     start_time = time.time()
@@ -51,10 +50,10 @@ def main():
             f"Time taken to calculate image points: {time.time() - start_time}s"
         )
 
-    # Set up screen
     screen = pygame.display.set_mode(
         (Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT), pygame.RESIZABLE
     )
+
     pygame.display.set_caption("@CodeAccelerando on github")
     background = pygame.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
     alpha_value = Config.STARTING_ALPHA
@@ -62,11 +61,8 @@ def main():
     clock = pygame.time.Clock()
 
     # Set image to be centred in the screen
-    screen_centre = (Config.SCREEN_WIDTH / 2, Config.SCREEN_HEIGHT / 2)
-
-    img_center = img.get_centre()
-    s_x, s_y = screen_centre
-    i_x, i_y = img_center
+    s_x, s_y = (Config.SCREEN_WIDTH // 2, Config.SCREEN_HEIGHT // 2)
+    i_x, i_y = img.get_centre()
 
     # Must be translated by terms of font size so they can be drawn to points
     # where the symbols should be
