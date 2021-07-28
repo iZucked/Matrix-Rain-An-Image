@@ -74,6 +74,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# PyCharm Configuration Files
+.idea
+
 # Jupyter Notebook
 .ipynb_checkpoints
 

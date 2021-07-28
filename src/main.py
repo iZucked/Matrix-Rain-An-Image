@@ -1,128 +1,158 @@
 import os
 import sys
-import cv2
-import pygame as pg
-from random import choice, randrange
-from image import image
-from config import config
-from symbol import Symbol, SymbolColumn
 import time
+from random import randrange
+
+import pygame
+
+from config import Config
+from image import Image
+from symbol import Symbol, SymbolColumn
 
 os.environ["SDL_VIDEO_CENTERED"] = "1"
 
 
-def main():
-    TOGLE_DRAWING = True
-
+def mode_check():
     # MODE check
-    if config.JUST_DISPLAY_MODE and config.RAIN_ACCUMULATION_MODE:
+    if Config.JUST_DISPLAY_MODE and Config.RAIN_ACCUMULATION_MODE:
         print("CAN'T HAVE BOTH MODES ACTIVATED!, CHECK config.py")
-        exit()
+        return False
 
-    if config.DRAW_LINES_OF_IMAGE and config.SINGLE_COLOR_SELECTION:
+    if Config.DRAW_LINES_OF_IMAGE and Config.SINGLE_COLOR_SELECTION:
         print("Can't select more than one picture processing mode")
-        exit()
+        return False
 
     if len(sys.argv) != 2:
         print("Must add image to input in command line argument")
-        exit()
+        return False
 
-    # Init pygame
-    pg.init()
+    return True
 
-    # Set up image
-    img = image(sys.argv[1])
-    img.scaleImage(config.IMG_SCALE)
-    startT = time.time()
-    img.calculateAllThresholdPositions(
-        config.THRESHOLD, config.FONT_SIZE, config.ISOLATE_COLOR
+
+def get_image():
+    img = Image(sys.argv[1])
+    img.scale_image(Config.IMG_SCALE)
+    img.calculate_all_threshold_positions(
+        Config.FONT_SIZE, Config.ISOLATE_COLOR
     )
-    if config.debug:
-        print(f"Time taken to calculate image points: {time.time() - startT}s")
+    return img
 
-    # Set up screen
-    screen = pg.display.set_mode(
-        (config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pg.RESIZABLE
-    )
-    pg.display.set_caption("@CodeAccelerando on github")
-    bg = pg.Surface((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
-    alpha_value = config.STARTING_ALPHA
-    bg.set_alpha(alpha_value)
-    clock = pg.time.Clock()
 
-    # Set image to be centred in the screen
-    screen_centre = (config.SCREEN_WIDTH / 2, config.SCREEN_HEIGHT / 2)
-    img_center = img.getCentre()
-    sX, sY = screen_centre
-    iX, iY = img_center
-    # Must be translated by terms of font size so they can be drawn to points where the symbols should be
-    vecX = round((sX - iX) / config.FONT_SIZE)
-    vecY = round((sY - iY) / config.FONT_SIZE)
-
-    startT = time.time()
-    img.translatePointsByVector((vecX * config.FONT_SIZE, vecY * config.FONT_SIZE))
-    if config.debug:
-        print(f"Time taken to translate image points: {time.time() - startT}s")
-
-    # Set up symbol list for JUST_DISPLAY_MODE if toggled
+def get_symbols(img):
     symbol_list = []
-    if config.JUST_DISPLAY_MODE:
-        for x, yPositions in img.columnPositions.items():
+    if Config.JUST_DISPLAY_MODE:
+        for x, yPositions in img.column_positions.items():
             for y in yPositions:
-                symbol_list.append(Symbol(x, y, 0, pg.Color("white")))
+                symbol_list.append(Symbol(x, y, 0, pygame.Color("white")))
 
     # Create a column for each (x, x + FONT_SIZE) in the screen
     symbol_columns = [
         SymbolColumn(
-            x, randrange(0, config.SCREEN_HEIGHT), img.getPositionsForColumn(x)
+            x, randrange(0, Config.SCREEN_HEIGHT),
+            img.get_positions_for_column(x)
         )
-        for x in range(0, config.SCREEN_WIDTH, config.FONT_SIZE)
+        for x in range(0, Config.SCREEN_WIDTH, Config.FONT_SIZE)
     ]
 
-    while True:
+    return symbol_list, symbol_columns
+
+
+def main():
+    toggle_drawing = True
+
+    if not mode_check():
+        return
+
+    pygame.init()
+
+    marker = time.time()
+    img = get_image()
+
+    if Config.debug:
+        print(f"Time taken to calculate image points: {time.time() - marker}s")
+
+    screen = pygame.display.set_mode(Config.SCREEN_SIZE, pygame.RESIZABLE)
+    pygame.display.set_caption("@CodeAccelerando on github")
+
+    background = pygame.Surface(Config.SCREEN_SIZE)
+    background.set_alpha(Config.STARTING_ALPHA)
+    clock = pygame.time.Clock()
+
+    # Set image to be centred in the screen
+    s_x, s_y = (Config.SCREEN_WIDTH // 2, Config.SCREEN_HEIGHT // 2)
+    i_x, i_y = img.get_centre()
+
+    # Must be translated by terms of font size so they can be drawn to points
+    # where the symbols should be
+    vec_x = round((s_x - i_x) / Config.FONT_SIZE)
+    vec_y = round((s_y - i_y) / Config.FONT_SIZE)
+
+    marker = time.time()
+    img.translate_points_by_vector(
+        (vec_x * Config.FONT_SIZE, vec_y * Config.FONT_SIZE)
+    )
+
+    if Config.debug:
+        print(
+            f"Time taken to translate image points: {time.time() - marker}s"
+        )
+
+    # Set up symbol list for JUST_DISPLAY_MODE if toggled
+    symbol_list, symbol_columns = get_symbols(img)
+
+    is_running = True
+    while is_running:
         # Check for events
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                is_running = False
 
         # Create black background for screen
-        screen.blit(bg, (0, 0))
-        bg.fill(pg.Color("black"))
+        screen.blit(background, (0, 0))
+        background.fill(pygame.Color("black"))
 
-        if config.RAIN_ACCUMULATION_MODE and TOGLE_DRAWING:
-            if img.columnsLeftToPlace():
-                for symbol_column in symbol_columns:
-                    if img.columnHasPositions(symbol_column.x):
-                        if (
-                            symbol_column.getWhiteSymbol().getYPosition()
-                            == img.getNextPositionForColumn(symbol_column.x)
-                        ):
-                            symbol_column.placeWhiteSymbol()
-                            img.getPositionsForColumn(symbol_column.x).pop(0)
-        elif config.JUST_DISPLAY_MODE and TOGLE_DRAWING:
+        if (
+            Config.RAIN_ACCUMULATION_MODE
+                and toggle_drawing
+                and img.columns_left_to_place()
+        ):
+            for symbol_column in symbol_columns:
+                if (
+                    img.column_has_positions(symbol_column.x) and (
+                        symbol_column.get_white_symbol().get_y_position()
+                        == img.get_next_position_for_column(symbol_column.x)
+                    )
+                ):
+                    symbol_column.place_white_symbol()
+                    img.get_positions_for_column(symbol_column.x).pop(0)
+
+        elif Config.JUST_DISPLAY_MODE and toggle_drawing:
             for symbol in symbol_list:
                 symbol.update()
-                symbol.draw(bg)
+                symbol.draw(background)
 
         # Draw all columns
         for symbol_column in symbol_columns:
-            symbol_column.draw(bg)
+            symbol_column.draw(background)
 
         # Alpha max is 255 where there is no fading
         if (
-            not pg.time.get_ticks() % config.FADE_RATE
-            and alpha_value < config.ALPHA_LIMIT
+            not pygame.time.get_ticks() % Config.FADE_RATE
+                and Config.STARTING_ALPHA < Config.ALPHA_LIMIT
         ):
-            alpha_value += config.FADE_ADJUSTMENT
-            bg.set_alpha(alpha_value)
+            Config.STARTING_ALPHA += Config.FADE_ADJUSTMENT
+            background.set_alpha(Config.STARTING_ALPHA)
 
         # Check if user wants to start placing image
-        keys_pressed = pg.key.get_pressed()
-        if keys_pressed[pg.K_RETURN]:
-            TOGLE_DRAWING = not TOGLE_DRAWING
+        keys_pressed = pygame.key.get_pressed()
+        if keys_pressed[pygame.K_RETURN]:
+            toggle_drawing = not toggle_drawing
 
-        pg.display.update()
-        clock.tick(config.FPS_LIMIT)
+        pygame.display.update()
+        clock.tick(Config.FPS_LIMIT)
+
+    pygame.display.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":
