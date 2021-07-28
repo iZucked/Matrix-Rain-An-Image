@@ -60,7 +60,8 @@ def main():
     vecY = round((sY - iY) / config.FONT_SIZE)
 
     startT = time.time()
-    img.translatePointsByVector((vecX * config.FONT_SIZE, vecY * config.FONT_SIZE))
+    img.translatePointsByVector(
+        (vecX * config.FONT_SIZE, vecY * config.FONT_SIZE))
     if config.debug:
         print(f"Time taken to translate image points: {time.time() - startT}s")
 
@@ -94,8 +95,8 @@ def main():
                 for symbol_column in symbol_columns:
                     if img.columnHasPositions(symbol_column.x):
                         if (
-                            symbol_column.getWhiteSymbol().getYPosition()
-                            == img.getNextPositionForColumn(symbol_column.x)
+                                symbol_column.getWhiteSymbol().getYPosition()
+                                == img.getNextPositionForColumn(symbol_column.x)
                         ):
                             symbol_column.placeWhiteSymbol()
                             img.getPositionsForColumn(symbol_column.x).pop(0)
@@ -110,8 +111,8 @@ def main():
 
         # Alpha max is 255 where there is no fading
         if (
-            not pg.time.get_ticks() % config.FADE_RATE
-            and alpha_value < config.ALPHA_LIMIT
+                not pg.time.get_ticks() % config.FADE_RATE
+                and alpha_value < config.ALPHA_LIMIT
         ):
             alpha_value += config.FADE_ADJUSTMENT
             bg.set_alpha(alpha_value)

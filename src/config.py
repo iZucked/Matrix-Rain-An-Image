@@ -33,7 +33,7 @@ class config:
     FADE_ADJUSTMENT = 6
 
     # Paths
-    ROOT_DIR = os.getcwd()
+    ROOT_DIR = os.getcwd() + '/../'
 
     IMG_FILENAME = "logo.png"
     IMG_PATH = os.path.join(ROOT_DIR, "images/" + IMG_FILENAME)

@@ -3,8 +3,8 @@ from random import choice, randrange
 from config import config
 import time
 
-NOT_PLACED  = 0x00
-PLACED      = 0x01
+NOT_PLACED = 0x00
+PLACED = 0x01
 
 pg.init()
 
@@ -43,13 +43,14 @@ class Symbol:
     def stop_moving(self):
         self.state = PLACED
 
+
 class SymbolColumn:
-    def __init__(self, xPos, startY, placeablePositionsList):        
+    def __init__(self, xPos, startY, placeablePositionsList):
         minLength = 8
         maxLength = 35
         minSpeed = 3
         maxSpeed = 8
-        
+
         self.startY = startY
         self.x = xPos
         self.column_height = randrange(minLength, maxLength)
@@ -62,16 +63,20 @@ class SymbolColumn:
         self.placeablePositions = placeablePositionsList
 
         n = 0
-        for i in range(startY, startY - config.FONT_SIZE * self.column_height, -config.FONT_SIZE):
+        for i in range(startY, startY - config.FONT_SIZE * self.column_height,
+                       -config.FONT_SIZE):
             if n == 0:
                 # Let first symbol be white
-                self.symbols.append(Symbol(xPos, i, self.speed, pg.Color('white')))
-            elif  n % 2 :
-                self.symbols.append(Symbol(xPos, i, self.speed, (40, randrange(160, 256), 40)))
+                self.symbols.append(
+                    Symbol(xPos, i, self.speed, pg.Color('white')))
+            elif n % 2:
+                self.symbols.append(
+                    Symbol(xPos, i, self.speed, (40, randrange(160, 256), 40)))
             else:
-                self.symbols.append(Symbol(xPos, i, self.speed, pg.Color('lightgreen'))) 
-            
-            n=+1
+                self.symbols.append(
+                    Symbol(xPos, i, self.speed, pg.Color('lightgreen')))
+
+            n = +1
 
     def placeWhiteSymbol(self):
         # Add placed symbol and replace with new one
@@ -79,35 +84,36 @@ class SymbolColumn:
         whiteSymbol = copy_list[0]
         whiteSymbol.stop_moving()
         self.placedSymbols.append(whiteSymbol)
-        self.symbols[0] = Symbol(whiteSymbol.x, whiteSymbol.y, whiteSymbol.speed, whiteSymbol.color)
+        self.symbols[0] = Symbol(whiteSymbol.x, whiteSymbol.y,
+                                 whiteSymbol.speed, whiteSymbol.color)
 
     def getWhiteSymbol(self):
         return self.symbols[0]
 
     def checkWhiteSymbol(self):
         if self.getWhiteSymbol().getYPosition() == self.nextPlacementPos and self.nextPlacementPos != -1:
-            #print(f"placing white at: {self.nextPlacementPos}")
+            # print(f"placing white at: {self.nextPlacementPos}")
             if len(self.placeablePositions) > 0:
                 self.nextPlacementPos = self.placeablePositions.pop(0)
             else:
-                self.nextPlacementPos = -1 # Unreachable
+                self.nextPlacementPos = -1  # Unreachable
 
             self.placeWhiteSymbol()
 
     def draw(self, surface):
         # Check if we need to place any symbols
-        #self.checkWhiteSymbol()
+        # self.checkWhiteSymbol()
 
         # Draw all moving symbols
         for i, symbol in enumerate(self.symbols):
             if symbol.state == PLACED:
                 print(f"SYMBOL {symbol.x} should not be here!!!!!!!!!!!!")
-            
+
             # Update the symbol character and position
             symbol.update()
 
             # Add fading effect in the column
-            symbol.surface.set_alpha(i + (255 - (255 / self.column_height)*i))
+            symbol.surface.set_alpha(i + (255 - (255 / self.column_height) * i))
 
             # Draw symbol to surface
             symbol.draw(surface)
