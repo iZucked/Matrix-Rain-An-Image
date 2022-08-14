@@ -13,7 +13,6 @@ pygame.init()
 
 # Create our list of characters we can render which then is made in to a
 # list of surfaces
-katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
 font = pygame.font.Font(Config.FONT_PATH, Config.FONT_SIZE)
 
 
@@ -39,7 +38,7 @@ class Symbol:
         self.interval = randrange(5, 30)
         self.state = NOT_PLACED
 
-        self.charSet = get_char_surfaces(font, katakana, color)
+        self.charSet = get_char_surfaces(font, Config.CHARACTER_SET, color)
         self.surface = choice(self.charSet)
 
     def update(self):
