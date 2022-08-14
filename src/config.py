@@ -1,4 +1,6 @@
 import os
+from typing import List
+
 
 class Config:
     # Enable or disable debug messages
@@ -9,8 +11,8 @@ class Config:
     JUST_DISPLAY_MODE = True  # Displays all the symbols at once
 
     # Image Processing Modes
-    SINGLE_COLOR_SELECTION = False #Selects an ISOLATE_COLOR and draws a symbol where found in a FONT_SIZE x FONT_SIZE square
-    DRAW_LINES_OF_IMAGE = True
+    SINGLE_COLOR_SELECTION = True # Selects an ISOLATE_COLOR and draws a symbol where found in a FONT_SIZE x FONT_SIZE square
+    DRAW_LINES_OF_IMAGE = False
     LINE_THICKNESS = 3  # If DRAW_LINES_OF_IMAGE is chosen the lines of an image
     # must be big enough to fit a FONT_SIZE x FONT_SIZE square of white pixels
     # (change and enable debug to see difference)
@@ -39,5 +41,6 @@ class Config:
         ROOT_DIR = ROOT_DIR[:-3]
 
     FONT_SIZE = 10
-    FONT_FILENAME = "MS Mincho.ttf"
+    FONT_FILENAME = "matrix code nfi.ttf"
+    CHARACTER_SET: List[chr] = [chr(int('0x61', 16) + i) for i in range(25)]
     FONT_PATH = os.path.join(ROOT_DIR, "font/" + FONT_FILENAME)

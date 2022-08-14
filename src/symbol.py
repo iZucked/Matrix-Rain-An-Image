@@ -1,6 +1,8 @@
 from random import choice, randrange
+from typing import List
 
 import pygame
+from pygame.font import Font
 
 from config import Config
 
@@ -11,8 +13,19 @@ pygame.init()
 
 # Create our list of characters we can render which then is made in to a
 # list of surfaces
-katakana = [chr(int('0x30a0', 16) + i) for i in range(96)]
 font = pygame.font.Font(Config.FONT_PATH, Config.FONT_SIZE)
+
+
+def get_char_surfaces(font: Font, char_set: List[chr], char_color: pygame.Color) -> List[pygame.Surface]:
+    surfaces = []
+    for char in char_set:
+        try:
+            surfaces.append(font.render(char, True, char_color))
+        except pygame.error as e:
+            # In case of 'Couldn't find glyph' error
+            if "Couldn't find glyph" in e.args[0]:
+                continue
+    return surfaces
 
 
 class Symbol:
@@ -25,7 +38,7 @@ class Symbol:
         self.interval = randrange(5, 30)
         self.state = NOT_PLACED
 
-        self.charSet = [font.render(char, True, color) for char in katakana]
+        self.charSet = get_char_surfaces(font, Config.CHARACTER_SET, color)
         self.surface = choice(self.charSet)
 
     def update(self):
@@ -68,11 +81,11 @@ class SymbolColumn:
         self.next_placement_pos = 0
 
         for n, i in enumerate(
-            range(
-                start_y,
-                start_y - Config.FONT_SIZE * self.column_height,
-                -Config.FONT_SIZE
-            )
+                range(
+                    start_y,
+                    start_y - Config.FONT_SIZE * self.column_height,
+                    -Config.FONT_SIZE
+                )
         ):
             if n == 0:
                 # Let first symbol be white
@@ -110,8 +123,8 @@ class SymbolColumn:
 
     def check_white_symbol(self):
         if (
-            self.get_white_symbol().get_y_position() == self.next_placement_pos
-            and self.next_placement_pos != -1
+                self.get_white_symbol().get_y_position() == self.next_placement_pos
+                and self.next_placement_pos != -1
         ):
             self.next_placement_pos = (
                 self.placeable_positions.pop(0)
